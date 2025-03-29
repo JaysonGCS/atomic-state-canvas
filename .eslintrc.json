@@ -1,0 +1,30 @@
+{
+  "root": true,
+  "plugins": ["prettier", "import", "perfectionist"],
+  "rules": {
+    "prettier/prettier": "error",
+    "import/no-duplicates": "error",
+    "perfectionist/sort-named-imports": [
+      "error",
+      {
+        "type": "natural",
+        "order": "asc"
+      }
+    ],
+    "perfectionist/sort-interfaces": [
+      "error",
+      {
+        "type": "natural",
+        "order": "asc"
+      }
+    ],
+    "no-console": [
+      "error",
+      {
+        "allow": ["warn", "error"]
+      }
+    ]
+  },
+  "parserOptions": { "sourceType": "module", "ecmaVersion": 6 },
+  "parser": "@typescript-eslint/parser"
+}
