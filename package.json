@@ -6,7 +6,8 @@
     "build": "npx tsc",
     "build:watch": "npx tsc --watch",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "lint": "eslint src/**"
+    "lint": "eslint src/**",
+    "semantic-release": "semantic-release"
   },
   "repository": "https://github.com/JaysonGCS/atomic-state-canvas",
   "homepage": "https://github.com/JaysonGCS/atomic-state-canvas/blob/main/README.md",
@@ -43,5 +44,8 @@
     "prettier": "^3.3.2",
     "semantic-release": "^24.2.3",
     "typescript": "^5.8.2"
-  }
+  },
+  "files": [
+    "dist"
+  ]
 }
