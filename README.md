@@ -1,13 +1,19 @@
 # Atomic State Canvas
 This is a project for visualizing atomic state relationships using [JSON Canvas](https://jsoncanvas.org/). Currently, it only supports [Recoil.js](https://recoiljs.org/) by default.
 
-## Development
+## Installation
+```bash
+npm install atomic-state-canvas -g
 ```
+
+## Local Development
+### Get Started
+```bash
 npm build:watch
 ```
 
-## Examples
-```
+### Examples
+```bash
 # Standard
 node dist/index.js -f /Users/jaysongcs/Projects/atomic-state-canvas/examples/standard/src/storeOne/entrySelector.ts -s entrySelector -o test.canvas
 
