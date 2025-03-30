@@ -2,6 +2,9 @@
   "name": "atomic-state-canvas",
   "version": "0.0.1",
   "main": "dist/index.js",
+  "bin": {
+    "atomic-state-canvas": "./dist/index.js"
+  },
   "scripts": {
     "build": "npx tsc",
     "build:watch": "npx tsc --watch",

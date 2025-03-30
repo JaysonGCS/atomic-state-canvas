@@ -1,3 +1,5 @@
+#! /usr/bin/env node
+
 import { textSync } from 'figlet';
 import { program } from 'commander';
 import fs from 'fs';
@@ -11,13 +13,17 @@ import { logMsg } from './logUtils';
 import { setVerboseLevel } from './configUtils';
 
 program
-  .version('1.0.0')
-  .description('test')
+  .description('A CLI tool for visualizing atomic state relationships using JSON Canvas')
   .option('-v, --verbose', 'Verbose mode')
   .option('-f, --file <value>', 'File')
   .option('-s, --search <value>', 'Search variable name')
   .option('-o, --output <value>', 'Output file name')
   .parse(process.argv);
+
+// When no arguments are provided, display help
+if (!process.argv.slice(2).length) {
+  program.outputHelp();
+}
 
 const options = program.opts();
 
@@ -36,6 +42,7 @@ const readStateFile = async (pathName: string): Promise<string> => {
     throw new Error(`Error reading file: ${error}`);
   }
 };
+
 if (options.file) {
   if (options.search) {
     // eslint-disable-next-line no-console
@@ -57,6 +64,6 @@ if (options.file) {
       }
     });
   } else {
-    console.error('Missing variable name.');
+    console.error('Missing search variable name. Please provide it via -s <variable_name>');
   }
 }
