@@ -1,4 +1,4 @@
-import { atom, selector, selectorFamily } from 'recoil';
+import { selector, selectorFamily } from 'recoil';
 
 export const neighbourSelectorFamily = selectorFamily<boolean, string>({
   key: 'neighbourSelectorFamily',
@@ -15,7 +15,6 @@ export const entrySelector = selector<string>({
   key: 'entrySelector',
   get: ({ get }) => {
     get(neighbourSelectorFamily(''));
-    get(someAtom);
     return '';
   },
   cachePolicy_UNSTABLE: { eviction: 'most-recent' }
