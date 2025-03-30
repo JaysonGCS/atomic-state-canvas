@@ -6,6 +6,23 @@ This is a project for visualizing atomic state relationships using [JSON Canvas]
 npm install atomic-state-canvas -g
 ```
 
+## Usage
+
+### Prerequisite
+- Make sure that you have [Node](https://nodejs.org/en) installed.
+
+### Examples
+```bash
+# Help
+atomic-state-canvas -h
+
+# Parse file and traverse based on search variable, then print JSON Canvas
+atomic-state-canvas -f ./src/storeOne/entrySelector.ts -s entrySelector
+
+# Parse file and traverse based on search variable, then output JSON Canvas to file
+atomic-state-canvas -f ./src/storeOne/entrySelector.ts -s entrySelector -o test.canvas
+```
+
 ## Local Development
 ### Get Started
 ```bash

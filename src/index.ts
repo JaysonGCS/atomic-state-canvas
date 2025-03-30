@@ -17,7 +17,7 @@ program
   .option('-v, --verbose', 'Verbose mode')
   .option('-f, --file <value>', 'File')
   .option('-s, --search <value>', 'Search variable name')
-  .option('-o, --output <value>', 'Output file name')
+  .option('-o, --output <value>', 'Output file name for JSON Canvas')
   .parse(process.argv);
 
 // When no arguments are provided, display help
@@ -66,4 +66,6 @@ if (options.file) {
   } else {
     console.error('Missing search variable name. Please provide it via -s <variable_name>');
   }
+} else {
+  console.error('Missing file name. Please provide it via -f <file_name>');
 }
