@@ -1,27 +1,26 @@
 import { simple } from 'acorn-walk';
-import { get } from 'http';
 import {
   Argument,
-  FunctionBody,
   ImportDeclaration,
   ParseResult,
-  VariableDeclarator
+  VariableDeclarator,
+  parseSync
 } from 'oxc-parser';
+import { TDependencyGraph } from './types';
+import fs from 'fs';
+import path from 'path';
+import { Statement } from 'acorn';
+import { logMsg } from './logUtils';
+import { log } from 'console';
+import { config } from './configUtils';
 
 // TODO: Utilise plugin pattern to load library specific setup
 const RECOIL_FUNCTIONS = ['atom', 'selector', 'atomFamily', 'selectorFamily'];
 
-type TRecoilDependencyType = 'atomOrSelector' | 'atomFamilyOrSelectorFamily';
-type TRecoilDependency = {
-  dependencyName: string;
-  dependencyType: TRecoilDependencyType;
-  dependencies?: TRecoilDependency[];
-};
-
 const getRecoilStateDependencyFromGetterStatement = (
-  body: FunctionBody['body']
-): TRecoilDependency[] => {
-  const dependencies: TRecoilDependency[] = [];
+  body: Array<Statement>
+): TDependencyGraph[] => {
+  const dependencies: TDependencyGraph[] = [];
   body.forEach((block) => {
     simple(block, {
       CallExpression(node) {
@@ -54,19 +53,35 @@ const getRecoilStateDependencyFromGetterStatement = (
   return dependencies;
 };
 
+const findVariableDeclaratorFromName = (
+  searchVariableName: string,
+  variableDeclaratorList: VariableDeclarator[]
+): VariableDeclarator | undefined => {
+  return variableDeclaratorList.find((variableDeclarator) => {
+    const details = getVariableDeclaratorDetails(variableDeclarator);
+    if (!details) {
+      return false;
+    }
+    const { variableName } = details;
+    return searchVariableName === variableName;
+  });
+};
+
 // TODO: Utilise plugin pattern to load library specific setup
 const recoilGraphTraverseFunctionRecord: Record<
   string,
   (
     importDeclarationList: ImportDeclaration[],
     neighbourVariableDeclaratorList: VariableDeclarator[],
-    entryVariableDeclarator: VariableDeclarator
-  ) => TRecoilDependency
+    entryVariableDeclarator: VariableDeclarator,
+    entryDirectoryName: string
+  ) => TDependencyGraph
 > = {
   atom: (
     importDeclarationList: ImportDeclaration[],
     neighbourVariableDeclaratorList: VariableDeclarator[],
-    entryVariableDeclarator: VariableDeclarator
+    entryVariableDeclarator: VariableDeclarator,
+    entryDirectoryName: string
   ) => {
     const { variableName, functionArguments } =
       getVariableDeclaratorDetails(entryVariableDeclarator)!;
@@ -87,40 +102,87 @@ const recoilGraphTraverseFunctionRecord: Record<
     }
     return {
       dependencyName: variableName,
-      dependencyType: 'atomOrSelector',
+      dependencyType: 'atom',
       dependencies: []
     };
   },
-  selectorFamily: (
+  selector: (
     importDeclarationList: ImportDeclaration[],
     neighbourVariableDeclaratorList: VariableDeclarator[],
-    entryVariableDeclarator: VariableDeclarator
+    entryVariableDeclarator: VariableDeclarator,
+    entryDirectoryName: string
   ) => {
     const { variableName, functionArguments } =
       getVariableDeclaratorDetails(entryVariableDeclarator)!;
-    const dependencies: TRecoilDependency[] = [];
+    const dependencies: TDependencyGraph[] = [];
     const obj = functionArguments.at(0);
     if (obj?.type === 'ObjectExpression') {
-      obj.properties.forEach((property) => {
-        if (property.type === 'Property') {
-          if (property.key.type === 'Identifier') {
-            const recoilPropertyName = property.key.name;
-            if (recoilPropertyName === 'get') {
-              if (property.value.type === 'ArrowFunctionExpression') {
-                const { body } = property.value;
-                if (body.type === 'ArrowFunctionExpression') {
-                  // const utilisedRecoilFunctionNames = body.params;
-                  // console.log({ utilisedRecoilFunctionNames });
-                  const getterStatement = body.body;
-                  if (getterStatement.type === 'BlockStatement') {
-                    const foundDependencies = getRecoilStateDependencyFromGetterStatement(
-                      getterStatement.body
-                    );
-                    // TODO: Further traverse each entry in foundDependencies to build the dependency tree.
-                    dependencies.push(...foundDependencies);
+      simple(obj, {
+        ArrowFunctionExpression(body) {
+          if (body.type === 'ArrowFunctionExpression') {
+            const getterStatement = body.body;
+            if (getterStatement.type === 'BlockStatement') {
+              let foundDependencies: TDependencyGraph[] =
+                getRecoilStateDependencyFromGetterStatement(getterStatement.body);
+              foundDependencies = foundDependencies.map<TDependencyGraph>((dependency) => {
+                const { dependencyName } = dependency;
+                const neighbourVariableDeclarator: VariableDeclarator | undefined =
+                  findVariableDeclaratorFromName(dependencyName, neighbourVariableDeclaratorList);
+                let neighbourGraph: TDependencyGraph | undefined;
+                if (neighbourVariableDeclarator) {
+                  neighbourGraph = generateGraph(
+                    importDeclarationList,
+                    neighbourVariableDeclaratorList,
+                    neighbourVariableDeclarator,
+                    entryDirectoryName
+                  );
+                }
+                let importGraph: TDependencyGraph | undefined;
+                if (!neighbourGraph) {
+                  // If no neighbour variable declarator is found, search for an import declaration
+                  const importDeclaration = importDeclarationList.find((importDeclaration) => {
+                    let found: boolean = false;
+                    simple(importDeclaration, {
+                      ImportSpecifier(node) {
+                        if (
+                          node.imported.type === 'Identifier' &&
+                          node.imported.name === dependencyName
+                        ) {
+                          found = true;
+                        }
+                      }
+                    });
+                    return found;
+                  });
+                  if (importDeclaration) {
+                    const fileNames = fs.readdirSync(entryDirectoryName);
+                    const fileNameWithExtension = fileNames.find((fileName) => {
+                      const fileNameWithoutExtension = fileName.split('.')[0];
+                      return (
+                        path.normalize(importDeclaration.source.value) === fileNameWithoutExtension
+                      );
+                    });
+                    if (fileNameWithExtension) {
+                      const fullFilePath = path.normalize(
+                        `${entryDirectoryName}${path.sep}${fileNameWithExtension}`
+                      );
+                      const file = fs.readFileSync(path.normalize(fullFilePath));
+                      const result = parseSync(fullFilePath, file.toString());
+                      const graph = generateDependencyGraph(result, {
+                        searchVariableName: dependencyName,
+                        entryDirectoryName
+                      });
+                      importGraph = graph;
+                    }
                   }
                 }
-              }
+                const finalGraph = importGraph ?? neighbourGraph;
+                return {
+                  ...dependency,
+                  dependencies: finalGraph?.dependencies
+                };
+              });
+              dependencies.push(...foundDependencies);
             }
           }
         }
@@ -128,9 +190,22 @@ const recoilGraphTraverseFunctionRecord: Record<
     }
     return {
       dependencyName: variableName,
-      dependencyType: 'atomFamilyOrSelectorFamily',
+      dependencyType: 'selector',
       dependencies
     };
+  },
+  selectorFamily: (
+    importDeclarationList: ImportDeclaration[],
+    neighbourVariableDeclaratorList: VariableDeclarator[],
+    entryVariableDeclarator: VariableDeclarator,
+    entryDirectoryName: string
+  ) => {
+    return recoilGraphTraverseFunctionRecord['selector'](
+      importDeclarationList,
+      neighbourVariableDeclaratorList,
+      entryVariableDeclarator,
+      entryDirectoryName
+    );
   }
 };
 
@@ -153,22 +228,41 @@ const getVariableDeclaratorDetails = (
   return undefined;
 };
 
+const circularDetection = new Map<string, number>();
+const CIRCULAR_DETECTION_THRESHOLD = 10;
+
 const generateGraph = (
   importDeclarationList: ImportDeclaration[],
   neighbourVariableDeclaratorList: VariableDeclarator[],
-  entryVariableDeclarator: VariableDeclarator
-): TRecoilDependency => {
+  entryVariableDeclarator: VariableDeclarator,
+  entryDirectoryName: string
+): TDependencyGraph => {
   const details = getVariableDeclaratorDetails(entryVariableDeclarator);
   if (details) {
     const { variableName, stateFunctionName } = details;
     if (!recoilGraphTraverseFunctionRecord[stateFunctionName]) {
       throw new Error(`No handler found for ${stateFunctionName}.`);
     }
-    console.log(`Generating graph for ${variableName} [${stateFunctionName}].`);
+    let updatedCount = circularDetection.get(variableName) || 0;
+    updatedCount += 1;
+    circularDetection.set(variableName, updatedCount);
+    if (updatedCount > CIRCULAR_DETECTION_THRESHOLD) {
+      config.verbose &&
+        logMsg(
+          `Circular dependency detected. ${variableName} is called more than ${CIRCULAR_DETECTION_THRESHOLD} times.`,
+          true
+        );
+      return {
+        dependencyName: variableName,
+        dependencyType: 'circular'
+      };
+    }
+    config.verbose && logMsg(`Generating graph for ${variableName} [${stateFunctionName}].`, true);
     return recoilGraphTraverseFunctionRecord[stateFunctionName](
       importDeclarationList,
       neighbourVariableDeclaratorList,
-      entryVariableDeclarator
+      entryVariableDeclarator,
+      entryDirectoryName
     );
   }
   throw new Error(`No details found for entry variable declarator.`);
@@ -191,8 +285,8 @@ const isRecoilRelatedVariableDeclarator = (variableDeclarator: VariableDeclarato
 
 export const generateDependencyGraph = (
   parseResult: ParseResult,
-  options: { searchVariableName: string }
-): TRecoilDependency => {
+  options: { searchVariableName: string; entryDirectoryName: string }
+): TDependencyGraph => {
   const importDeclarationList: ImportDeclaration[] = [];
   const neighbourVariableDeclaratorList: VariableDeclarator[] = [];
   let entryVariableDeclarator: VariableDeclarator | undefined = undefined;
@@ -239,102 +333,14 @@ export const generateDependencyGraph = (
     }
   });
   if (!entryVariableDeclarator) {
-    console.log('No entry variable found');
-    console.log('Please provide a valid entry variable name using the -s option');
+    log('No entry variable found, please provide a valid entry variable name using the -s option');
     process.exit(1);
   }
   const graph = generateGraph(
     importDeclarationList,
     neighbourVariableDeclaratorList,
-    entryVariableDeclarator
+    entryVariableDeclarator,
+    options.entryDirectoryName
   );
-  console.log({ importDeclarationList, neighbourVariableDeclaratorList });
   return graph;
 };
-
-type JSONCanvas = {
-  type: 'canvas';
-  version: '1.0';
-  nodes: {
-    id: string;
-    type: 'text';
-    text: string;
-    x: number;
-    y: number;
-    width: number;
-    height: number;
-    metadata?: Record<string, unknown>;
-  }[];
-  edges: {
-    id: string;
-    fromNode: string;
-    toNode: string;
-  }[];
-};
-
-export function convertToJSONCanvas(root: TRecoilDependency): JSONCanvas {
-  const nodes: JSONCanvas['nodes'] = [];
-  const edges: JSONCanvas['edges'] = [];
-
-  let counter = 0;
-  let depthMap: Record<number, number> = {}; // Track y positions per depth
-  let maxDepth = 0;
-  const width = 300;
-  const height = 150;
-  const bufferX = 150;
-  const bufferY = 50;
-
-  function generateId(): string {
-    return `node-${counter++}`;
-  }
-
-  function calculateDepth(dependency: TRecoilDependency, depth = 0): number {
-    maxDepth = Math.max(maxDepth, depth);
-    dependency.dependencies?.forEach((dep) => calculateDepth(dep, depth + 1));
-    return maxDepth;
-  }
-
-  calculateDepth(root); // Find max depth to place root at the rightmost position
-
-  function traverse(dependency: TRecoilDependency, parentId: string | null, depth = 0): string {
-    const nodeId = generateId();
-
-    // Determine Y position for this depth level
-    const y = depthMap[depth] || 0;
-    depthMap[depth] = y + height + bufferY; // Increment for the next node at this depth
-
-    // X position decreases as depth increases (root on the right)
-    const x = (maxDepth - depth) * (width + bufferX);
-
-    nodes.push({
-      id: nodeId,
-      type: 'text',
-      text: dependency.dependencyName,
-      x,
-      y,
-      width,
-      height,
-      metadata: { dependencyType: dependency.dependencyType }
-    });
-
-    dependency.dependencies?.forEach((dep) => {
-      const childId = traverse(dep, nodeId, depth + 1);
-      edges.push({
-        id: `edge-${childId}-${nodeId}`,
-        fromNode: childId, // Child points to parent
-        toNode: nodeId
-      });
-    });
-
-    return nodeId;
-  }
-
-  traverse(root, null);
-
-  return {
-    type: 'canvas',
-    version: '1.0',
-    nodes,
-    edges
-  };
-}

@@ -4,8 +4,11 @@ import fs from 'fs';
 import path from 'path';
 import { parseSync } from 'oxc-parser';
 import { getExtension } from './fileUtils';
-import { convertToJSONCanvas, generateDependencyGraph } from './nodeUtils';
+import { generateDependencyGraph } from './nodeUtils';
 import { writeFile } from 'fs/promises';
+import { convertToJSONCanvas } from './jsonCanvasUtils';
+import { logMsg } from './logUtils';
+import { setVerboseLevel } from './configUtils';
 
 program
   .version('1.0.0')
@@ -17,6 +20,9 @@ program
   .parse(process.argv);
 
 const options = program.opts();
+
+const isVerbose = options.verbose;
+setVerboseLevel(isVerbose);
 
 const readStateFile = async (pathName: string): Promise<string> => {
   try {
@@ -32,18 +38,22 @@ const readStateFile = async (pathName: string): Promise<string> => {
 };
 if (options.file) {
   if (options.search) {
+    // eslint-disable-next-line no-console
     console.log(textSync('A-S-C'));
     const pathName = options.file;
     const searchVariableName = options.search;
-    console.log(`File: ${pathName}`);
+    logMsg(`File: ${pathName}`);
+    logMsg(`Variable: ${searchVariableName}`);
     readStateFile(pathName).then((data) => {
       const result = parseSync(pathName, data);
-      const graph = generateDependencyGraph(result, { searchVariableName });
+      const entryDirectoryName = path.dirname(pathName);
+      const graph = generateDependencyGraph(result, { searchVariableName, entryDirectoryName });
       const jsonCanvas = convertToJSONCanvas(graph);
       if (options.output) {
+        // If output file name is provided, write to file.
         writeFile(options.output, JSON.stringify(jsonCanvas));
       } else {
-        console.log(JSON.stringify(jsonCanvas));
+        logMsg(JSON.stringify(jsonCanvas, null, 2));
       }
     });
   } else {

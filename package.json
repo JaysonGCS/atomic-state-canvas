@@ -1,17 +1,29 @@
 {
   "name": "atomic-state-canvas",
-  "version": "1.0.0",
-  "main": "index.js",
+  "version": "0.0.1",
+  "main": "dist/index.js",
   "scripts": {
     "build": "npx tsc",
     "build:watch": "npx tsc --watch",
     "test": "echo \"Error: no test specified\" && exit 1",
     "lint": "eslint src/**"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "description": "",
+  "repository": "https://github.com/JaysonGCS/atomic-state-canvas",
+  "homepage": "https://github.com/JaysonGCS/atomic-state-canvas/blob/main/README.md",
+  "keywords": [
+    "cli",
+    "json canvas",
+    "flowchart",
+    "atomic state",
+    "visualization",
+    "atomic state visualization"
+  ],
+  "author": {
+    "name": "Jayson Goh",
+    "url": "https://github.com/JaysonGCS"
+  },
+  "license": "MIT",
+  "description": "A CLI tool for visualizing atomic state relationships using JSON Canvas.",
   "dependencies": {
     "acorn": "^8.14.1",
     "acorn-walk": "^8.3.4",
