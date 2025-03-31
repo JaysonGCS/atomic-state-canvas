@@ -3,7 +3,7 @@ import { dependentSelector, someAtom } from './dependentRecoilSelector';
 import { subDirectoryAtom } from './subDirectory/subDependentSelector';
 
 export const neighbourSelectorFamily = selectorFamily<boolean, string>({
-  key: 'neighbourSelectorFamily',
+  key: '_neighbourSelectorFamily',
   get:
     (cusip: string) =>
     ({ get }) => {
@@ -15,7 +15,7 @@ export const neighbourSelectorFamily = selectorFamily<boolean, string>({
 });
 
 export const entrySelector = selector<string>({
-  key: 'entrySelector',
+  key: '_entrySelector',
   get: ({ get }) => {
     get(neighbourSelectorFamily(''));
     get(someAtom);
