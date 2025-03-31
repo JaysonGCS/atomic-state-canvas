@@ -43,7 +43,6 @@ node dist/index.js -f /Users/jaysongcs/Projects/atomic-state-canvas/examples/sta
 
 ## Roadmap
 - [ ] Support more state management libraries such as [Jotai](https://jotai.org/)
-- [ ] Add support for more features in JSON Canvas such as color indicator
+- [ ] Add support for more features in JSON Canvas such as grouping
 - [ ] Better documentation
 - [ ] More comprehensive unit tests
-- [ ] Improve performance and scalability

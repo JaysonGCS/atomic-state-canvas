@@ -1,6 +1,6 @@
 import { atom } from 'recoil';
 
 export const subDirectoryAtom = atom({
-  key: 'subDirectoryAtom',
+  key: '_subDirectoryAtom',
   default: 'someValue'
 });

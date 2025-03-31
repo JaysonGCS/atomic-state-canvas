@@ -2,12 +2,12 @@ import { atom, selector } from 'recoil';
 import { subDirectoryAtom } from './subDirectory/subDependentSelector';
 
 export const someAtom = atom({
-  key: 'someAtom',
+  key: '_someAtom',
   default: 'someValue'
 });
 
 export const dependentSelector = selector<string>({
-  key: 'dependentSelector',
+  key: '_dependentSelector',
   get: ({ get }) => {
     get(someAtom);
     get(subDirectoryAtom);
