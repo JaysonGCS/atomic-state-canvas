@@ -5,6 +5,8 @@ import path from 'path';
 import { Graph } from './dataStructure';
 import { getExtension } from './fileUtils';
 import { TPluginConfig, TSimpleNode } from './types';
+import { config } from './configUtils';
+import { logMsg } from './logUtils';
 
 type TImportDetails = {
   importVariables: string[];
@@ -147,6 +149,7 @@ export const generateGraph = (
     if (dependencyNode && fileDetailForDependency) {
       // Here we need to check if dependencyNode has dependencies as well. If it has dependencies, we need to recursively generate the graph for those dependencies as well.
       if (dependencyNode.dependencies.length !== 0) {
+        config.verbose && logMsg(`Generating graph for ${dependencyNode.name}`, true);
         generateGraph(fileDetailForDependency, dependencyNode.name, pluginConfig, graph);
       }
       graph.addEdge(entryNode, dependencyNode);
