@@ -47,11 +47,13 @@ export class Graph<T extends { id: string; name: string }> {
   private adjacencyList: Map<string, string[]>;
   private edgeMap: Map<string, { source: string; target: string }>;
   private nodeMap: Map<string, T>;
+  private cyclicNodeIdReference: Set<string>;
 
   constructor() {
     this.adjacencyList = new Map();
     this.edgeMap = new Map();
     this.nodeMap = new Map();
+    this.cyclicNodeIdReference = new Set();
   }
 
   addEdge(source: T, target: T): void {
@@ -65,6 +67,15 @@ export class Graph<T extends { id: string; name: string }> {
     this.edgeMap.set(`${target.id}-${source.id}`, { source: source.id, target: target.id });
     this.nodeMap.set(source.id, source);
     this.nodeMap.set(target.id, target);
+  }
+
+  addNodeMetadata(param: { type: 'cyclic'; sourceId: string; targetId: string }): void {
+    const { type } = param;
+    if (type === 'cyclic') {
+      const { sourceId, targetId } = param;
+      this.cyclicNodeIdReference.add(sourceId);
+      this.cyclicNodeIdReference.add(targetId);
+    }
   }
 
   hasCycle(sourceId: string, targetId: string): boolean {
@@ -113,7 +124,7 @@ export class Graph<T extends { id: string; name: string }> {
           y: idx * DEFAULT_Y_OFFSET,
           width: DEFAULT_NODE_WIDTH,
           height: DEFAULT_NODE_HEIGHT,
-          color: '2'
+          color: this.cyclicNodeIdReference.has(neighborNode.id) ? '1' : '4'
         },
         ...children
       );
@@ -135,7 +146,7 @@ export class Graph<T extends { id: string; name: string }> {
         y: 0,
         width: DEFAULT_NODE_WIDTH,
         height: DEFAULT_NODE_HEIGHT,
-        color: '1'
+        color: this.cyclicNodeIdReference.has(rootNode.id) ? '1' : '4'
       }
     ];
     // Continue to populate nodes based on the adjacency list
@@ -152,7 +163,10 @@ export class Graph<T extends { id: string; name: string }> {
         id: edgeId,
         fromNode: edge.target,
         toNode: edge.source,
-        color: '5'
+        color:
+          this.cyclicNodeIdReference.has(edge.target) && this.cyclicNodeIdReference.has(edge.source)
+            ? '3'
+            : '5'
       }))
     };
   }

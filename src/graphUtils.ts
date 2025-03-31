@@ -150,6 +150,11 @@ export const generateGraph = (
       // Here we need to check if dependencyNode has dependencies as well. If it has dependencies, we need to recursively generate the graph for those dependencies as well.
       if (dependencyNode.dependencies.length !== 0) {
         if (graph.hasCycle(entryNode.id, dependencyNode.id)) {
+          graph.addNodeMetadata({
+            type: 'cyclic',
+            sourceId: entryNode.id,
+            targetId: dependencyNode.id
+          });
           logMsg(`Cycle detected between ${entryNode.name} and ${dependencyNode.name}`);
           return;
         }
