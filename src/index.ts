@@ -1,16 +1,14 @@
 #! /usr/bin/env node
 
-import { textSync } from 'figlet';
 import { program } from 'commander';
+import { textSync } from 'figlet';
 import fs from 'fs';
-import path from 'path';
-import { parseSync } from 'oxc-parser';
-import { getExtension } from './fileUtils';
-import { generateDependencyGraph } from './nodeUtils';
 import { writeFile } from 'fs/promises';
-import { convertToJSONCanvas } from './jsonCanvasUtils';
-import { logMsg } from './logUtils';
 import { setVerboseLevel } from './configUtils';
+import { getExtension } from './fileUtils';
+import { generateGraph, getEntryNode, getFileDetails } from './graphUtils';
+import { logMsg } from './logUtils';
+import { config } from './plugins/recoil';
 
 program
   .description('A CLI tool for visualizing atomic state relationships using JSON Canvas')
@@ -51,18 +49,20 @@ if (options.file) {
     const searchVariableName = options.search;
     logMsg(`File: ${pathName}`);
     logMsg(`Variable: ${searchVariableName}`);
-    readStateFile(pathName).then((data) => {
-      const result = parseSync(pathName, data);
-      const entryDirectoryName = path.dirname(pathName);
-      const graph = generateDependencyGraph(result, { searchVariableName, entryDirectoryName });
-      const jsonCanvas = convertToJSONCanvas(graph);
-      if (options.output) {
-        // If output file name is provided, write to file.
-        writeFile(options.output, JSON.stringify(jsonCanvas));
-      } else {
-        logMsg(JSON.stringify(jsonCanvas, null, 2));
-      }
-    });
+    const entryFileDetails = getFileDetails(pathName, config);
+
+    const entryNode = getEntryNode(entryFileDetails, searchVariableName);
+    if (!entryNode) {
+      throw new Error(`Entry node ${searchVariableName} not found`);
+    }
+    const graph = generateGraph(entryFileDetails, searchVariableName, config);
+    const jsonCanvas = graph.generateJsonCanvas(entryNode.id);
+    if (options.output) {
+      // If output file name is provided, write to file.
+      writeFile(options.output, JSON.stringify(jsonCanvas));
+    } else {
+      logMsg(JSON.stringify(jsonCanvas, null, 2));
+    }
   } else {
     console.error('Missing search variable name. Please provide it via -s <variable_name>');
   }

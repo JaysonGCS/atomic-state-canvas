@@ -1,0 +1,121 @@
+const DEFAULT_NODE_WIDTH = 300;
+const DEFAULT_NODE_HEIGHT = 150;
+const DEFAULT_X_OFFSET = 2 * DEFAULT_NODE_WIDTH;
+const DEFAULT_Y_OFFSET = 2 * DEFAULT_NODE_HEIGHT;
+
+/**
+ * "1" red
+ * "2" orange
+ * "3" yellow
+ * "4" green
+ * "5" cyan
+ * "6" purple
+ */
+type TCanvasColor = '1' | '2' | '3' | '4' | '5' | '6';
+
+type TCanvasDirection = 'left-to-right' | 'right-to-left';
+
+const DEFAULT_DIRECTION: TCanvasDirection = 'left-to-right';
+
+export type TJsonCanvasNode = {
+  id: string;
+  type: 'text';
+  text: string;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  color?: TCanvasColor;
+};
+
+export type TJSonCanvas = {
+  nodes: TJsonCanvasNode[];
+  edges: {
+    id: string;
+    fromNode: string;
+    fromSide?: 'top' | 'bottom' | 'left' | 'right';
+    fromEnd?: 'none' | 'arrow';
+    toNode: string;
+    toSide?: 'top' | 'bottom' | 'left' | 'right';
+    toEnd?: 'none' | 'arrow';
+    color?: TCanvasColor;
+    label?: string;
+  }[];
+};
+
+export class Graph<T extends { id: string; name: string }> {
+  private adjacencyList: Map<string, string[]>;
+  private edgeList: { source: string; target: string }[];
+  private nodeMap: Map<string, T>;
+
+  constructor() {
+    this.adjacencyList = new Map();
+    this.edgeList = [];
+    this.nodeMap = new Map();
+  }
+
+  addEdge(source: T, target: T): void {
+    if (!this.adjacencyList.has(source.id)) {
+      this.adjacencyList.set(source.id, []);
+    }
+    if (!this.adjacencyList.has(target.id)) {
+      this.adjacencyList.set(target.id, []);
+    }
+    this.adjacencyList.get(source.id)!.push(target.id);
+    this.edgeList.push({ source: source.id, target: target.id });
+    this.nodeMap.set(source.id, source);
+    this.nodeMap.set(target.id, target);
+  }
+
+  private generateJsonCanvasNodes(nodeId: string, level: number): TJsonCanvasNode[] {
+    return this.adjacencyList.get(nodeId)!.reduce<TJsonCanvasNode[]>((acc, neighborId, idx) => {
+      const neighborNode = this.nodeMap.get(neighborId)!;
+      const children = this.generateJsonCanvasNodes(neighborId, level + 1);
+      acc.push(
+        {
+          id: neighborNode.id,
+          type: 'text',
+          text: neighborNode.name,
+          x: level * DEFAULT_X_OFFSET * (DEFAULT_DIRECTION === 'left-to-right' ? -1 : 1),
+          y: idx * DEFAULT_Y_OFFSET,
+          width: DEFAULT_NODE_WIDTH,
+          height: DEFAULT_NODE_HEIGHT,
+          color: '2'
+        },
+        ...children
+      );
+      return acc;
+    }, []);
+  }
+
+  generateJsonCanvas(rootId: string): TJSonCanvas {
+    const rootNode = this.nodeMap.get(rootId);
+    if (!rootNode) {
+      throw new Error(`Node with id ${rootId} not found`);
+    }
+    const nodes: TJsonCanvasNode[] = [
+      {
+        id: rootNode.id,
+        type: 'text',
+        text: rootNode.name,
+        x: 0,
+        y: 0,
+        width: DEFAULT_NODE_WIDTH,
+        height: DEFAULT_NODE_HEIGHT,
+        color: '1'
+      }
+    ];
+    // Continue to populate nodes based on the adjacency list
+    const generatedNodes = this.generateJsonCanvasNodes(rootNode.id, 1);
+    nodes.push(...generatedNodes);
+    return {
+      nodes,
+      edges: this.edgeList.map((edge) => ({
+        id: `${edge.target}-${edge.source}`,
+        fromNode: edge.target,
+        toNode: edge.source,
+        color: '5'
+      }))
+    };
+  }
+}
