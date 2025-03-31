@@ -149,9 +149,15 @@ export const generateGraph = (
     if (dependencyNode && fileDetailForDependency) {
       // Here we need to check if dependencyNode has dependencies as well. If it has dependencies, we need to recursively generate the graph for those dependencies as well.
       if (dependencyNode.dependencies.length !== 0) {
+        if (graph.hasCycle(entryNode.id, dependencyNode.id)) {
+          logMsg(`Cycle detected between ${entryNode.name} and ${dependencyNode.name}`);
+          return;
+        }
         config.verbose && logMsg(`Generating graph for ${dependencyNode.name}`, true);
         generateGraph(fileDetailForDependency, dependencyNode.name, pluginConfig, graph);
       }
+      config.verbose &&
+        logMsg(`Adding edge from ${entryNode.name} to ${dependencyNode.name}`, true);
       graph.addEdge(entryNode, dependencyNode);
     }
   });

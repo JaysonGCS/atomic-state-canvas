@@ -45,12 +45,12 @@ export type TJSonCanvas = {
 
 export class Graph<T extends { id: string; name: string }> {
   private adjacencyList: Map<string, string[]>;
-  private edgeList: { source: string; target: string }[];
+  private edgeMap: Map<string, { source: string; target: string }>;
   private nodeMap: Map<string, T>;
 
   constructor() {
     this.adjacencyList = new Map();
-    this.edgeList = [];
+    this.edgeMap = new Map();
     this.nodeMap = new Map();
   }
 
@@ -62,15 +62,48 @@ export class Graph<T extends { id: string; name: string }> {
       this.adjacencyList.set(target.id, []);
     }
     this.adjacencyList.get(source.id)!.push(target.id);
-    this.edgeList.push({ source: source.id, target: target.id });
+    this.edgeMap.set(`${target.id}-${source.id}`, { source: source.id, target: target.id });
     this.nodeMap.set(source.id, source);
     this.nodeMap.set(target.id, target);
   }
 
-  private generateJsonCanvasNodes(nodeId: string, level: number): TJsonCanvasNode[] {
+  hasCycle(sourceId: string, targetId: string): boolean {
+    if (sourceId === targetId) {
+      return true;
+    }
+    // Use DFS to find potential cycle
+    const visited = new Set<string>();
+    const stack = [sourceId];
+    while (stack.length > 0) {
+      const node = stack.pop()!;
+      if (visited.has(node)) {
+        return true;
+      }
+      visited.add(node);
+      const adjacentNodes = this.adjacencyList.get(node);
+      if (!adjacentNodes) continue;
+      for (const neighbor of adjacentNodes) {
+        if (neighbor === targetId) {
+          return true;
+        }
+        stack.push(neighbor);
+      }
+    }
+    return false;
+  }
+
+  private generateJsonCanvasNodes(
+    nodeId: string,
+    level: number,
+    visited: Set<string> = new Set()
+  ): TJsonCanvasNode[] {
+    if (visited.has(nodeId)) {
+      return [];
+    }
+    visited.add(nodeId);
     return this.adjacencyList.get(nodeId)!.reduce<TJsonCanvasNode[]>((acc, neighborId, idx) => {
       const neighborNode = this.nodeMap.get(neighborId)!;
-      const children = this.generateJsonCanvasNodes(neighborId, level + 1);
+      const children = this.generateJsonCanvasNodes(neighborId, level + 1, visited);
       acc.push(
         {
           id: neighborNode.id,
@@ -107,11 +140,16 @@ export class Graph<T extends { id: string; name: string }> {
     ];
     // Continue to populate nodes based on the adjacency list
     const generatedNodes = this.generateJsonCanvasNodes(rootNode.id, 1);
-    nodes.push(...generatedNodes);
+    // Deduplicate generated nodes
+    const uniqueNodes = Array.from(new Set(generatedNodes.map((node) => node.id))).map(
+      (id) => generatedNodes.find((node) => node.id === id)!
+    );
+    nodes.push(...uniqueNodes);
+
     return {
       nodes,
-      edges: this.edgeList.map((edge) => ({
-        id: `${edge.target}-${edge.source}`,
+      edges: Array.from(this.edgeMap).map(([edgeId, edge]) => ({
+        id: edgeId,
         fromNode: edge.target,
         toNode: edge.source,
         color: '5'
