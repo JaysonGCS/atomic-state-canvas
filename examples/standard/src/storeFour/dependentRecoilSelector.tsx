@@ -1,5 +1,6 @@
 import { atom, selector } from 'recoil';
-import { neighbourSelectorFamily, subDirectoryAtom } from '.';
+import { neighbourSelectorFamily } from '.';
+import { subDirectoryAtom } from './subDirectory';
 
 export const someAtom = atom({
   key: '_someAtom',
