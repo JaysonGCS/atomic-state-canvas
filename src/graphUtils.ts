@@ -36,14 +36,45 @@ const isImportFromPathAlias = (importFromPath: string): boolean => {
   return importFromPath.includes('@') || !importFromPath.startsWith('.');
 };
 
-const getActualPathFromIndexFile = (indexFilePath: string, importVariableName: string): string => {
-  // TODO
-  return indexFilePath;
+const getActualPathFromIndexFile = (
+  indexFilePath: string,
+  importVariableName: string,
+  pluginConfig: TPluginConfig
+): string => {
+  const indexFileContent = readStateFile(indexFilePath);
+  const indexFileAst = parseSync(indexFilePath, indexFileContent);
+  let actualAbsolutePath: string | undefined = undefined;
+  simple(indexFileAst.program, {
+    ExportAllDeclaration(node) {
+      const actualRelativePathWithoutExt = String(node.source.value);
+      const directory = path.dirname(indexFilePath);
+      const fileNames = fs.readdirSync(directory);
+      const actualFileWithExt = fileNames.find(
+        (fileName) => fileName.split('.')[0] === actualRelativePathWithoutExt.split(path.sep).pop()
+      );
+      const potentialActualAbsolutePath = path.normalize(
+        `${directory}${path.sep}${actualFileWithExt}`
+      );
+      // Skip import for this level to avoid potential infinite loop
+      const fileDetails = getFileDetails(potentialActualAbsolutePath, pluginConfig, {
+        skipImport: true
+      });
+      const isImportSource = fileDetails.presentNodes.some((simpleNode) => {
+        return simpleNode.name === importVariableName;
+      });
+      if (isImportSource && actualAbsolutePath === undefined) {
+        actualAbsolutePath = potentialActualAbsolutePath;
+      }
+    }
+  });
+  // FIXME: probably shouldn't return indexFilePath since it's wrong
+  return actualAbsolutePath ?? indexFilePath;
 };
 
 const convertImportDeclarationToImportDetails = (
   entryDirectoryName: string,
-  importDeclaration: ImportDeclaration
+  importDeclaration: ImportDeclaration,
+  pluginConfig: TPluginConfig
 ): TImportDetails[] => {
   const importFromPath = importDeclaration.source.value;
   const importType = isImportFromPathAlias(importFromPath) ? 'alias' : 'file';
@@ -75,7 +106,11 @@ const convertImportDeclarationToImportDetails = (
       const importPathToVariablesMap = importVariables.reduce<{ [path: string]: string[] }>(
         (acc, importVar) => {
           // Read index file and figure out the true source of where the import is coming from
-          const actualPath = getActualPathFromIndexFile(fullFilePathWithExt, importVar);
+          const actualPath = getActualPathFromIndexFile(
+            fullFilePathWithExt,
+            importVar,
+            pluginConfig
+          );
           if (!acc[actualPath]) {
             acc[actualPath] = [];
           }
@@ -114,15 +149,19 @@ const convertImportDeclarationToImportDetails = (
   ];
 };
 
-export const getFileDetails = (pathName: string, pluginConfig: TPluginConfig): TFileDetails => {
+export const getFileDetails = (
+  pathName: string,
+  pluginConfig: TPluginConfig,
+  options?: { skipImport?: boolean }
+): TFileDetails => {
   const fileData = readStateFile(pathName);
   const parseResult: ParseResult = parseSync(pathName, fileData);
   const entryDirectoryName = path.dirname(pathName);
   return parseResult.program.body.reduce<TFileDetails>(
     (total, node) => {
-      if (node.type === 'ImportDeclaration') {
+      if (!options?.skipImport && node.type === 'ImportDeclaration') {
         total.importDetailsList.push(
-          ...convertImportDeclarationToImportDetails(entryDirectoryName, node)
+          ...convertImportDeclarationToImportDetails(entryDirectoryName, node, pluginConfig)
         );
       } else if (node.type === 'ExportNamedDeclaration' || node.type === 'VariableDeclaration') {
         const simpleNode: TSimpleNode | undefined = pluginConfig.parseDeclarationNode(node);
