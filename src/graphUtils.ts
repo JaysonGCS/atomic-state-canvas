@@ -4,9 +4,11 @@ import { ImportDeclaration, ParseResult, parseSync } from 'oxc-parser';
 import path from 'path';
 import { Graph } from './dataStructure';
 import { getExtension } from './fileUtils';
-import { TPluginConfig, TSimpleNode } from './types';
+import { TOptions, TPluginConfig, TSimpleNode } from './types';
 import { config } from './configUtils';
 import { logMsg } from './logUtils';
+
+const ALLOWED_EXTENSIONS = ['ts', 'js', 'tsx', 'jsx'];
 
 type TImportDetails = {
   importVariables: string[];
@@ -22,7 +24,7 @@ type TFileDetails = {
 const readStateFile = (pathName: string): string => {
   try {
     const extension = getExtension(pathName);
-    if (!(extension === 'ts' || extension === 'js')) {
+    if (!ALLOWED_EXTENSIONS.includes(extension)) {
       throw new Error(`Unsupported file extension: ${extension}`);
     }
     const data = fs.readFileSync(pathName, 'utf8');
@@ -39,7 +41,8 @@ const isImportFromPathAlias = (importFromPath: string): boolean => {
 const getActualPathFromIndexFile = (
   indexFilePath: string,
   importVariableName: string,
-  pluginConfig: TPluginConfig
+  pluginConfig: TPluginConfig,
+  options: TOptions
 ): string => {
   const indexFileContent = readStateFile(indexFilePath);
   const indexFileAst = parseSync(indexFilePath, indexFileContent);
@@ -48,7 +51,10 @@ const getActualPathFromIndexFile = (
     ExportAllDeclaration(node) {
       const actualRelativePathWithoutExt = String(node.source.value);
       const directory = path.dirname(indexFilePath);
-      const fileNames = fs.readdirSync(directory);
+      const rawFileNames = fs.readdirSync(directory);
+      const fileNames = options.excludePattern
+        ? rawFileNames.filter((fileName) => !options.excludePattern!.test(fileName))
+        : rawFileNames;
       const actualFileWithExt = fileNames.find(
         (fileName) => fileName.split('.')[0] === actualRelativePathWithoutExt.split(path.sep).pop()
       );
@@ -56,7 +62,7 @@ const getActualPathFromIndexFile = (
         `${directory}${path.sep}${actualFileWithExt}`
       );
       // Skip import for this level to avoid potential infinite loop
-      const fileDetails = getFileDetails(potentialActualAbsolutePath, pluginConfig, {
+      const fileDetails = getFileDetails(potentialActualAbsolutePath, pluginConfig, options, {
         skipImport: true
       });
       const isImportSource = fileDetails.presentNodes.some((simpleNode) => {
@@ -74,7 +80,8 @@ const getActualPathFromIndexFile = (
 const convertImportDeclarationToImportDetails = (
   entryDirectoryName: string,
   importDeclaration: ImportDeclaration,
-  pluginConfig: TPluginConfig
+  pluginConfig: TPluginConfig,
+  options: TOptions
 ): TImportDetails[] => {
   const importFromPath = importDeclaration.source.value;
   const importType = isImportFromPathAlias(importFromPath) ? 'alias' : 'file';
@@ -97,7 +104,10 @@ const convertImportDeclarationToImportDetails = (
   }
   if (importFromPath === '.') {
     // Check if the import is exported from index.ts or index.js
-    const fileNames = fs.readdirSync(entryDirectoryName);
+    const rawFileNames = fs.readdirSync(entryDirectoryName);
+    const fileNames = options.excludePattern
+      ? rawFileNames.filter((fileName) => !options.excludePattern!.test(fileName))
+      : rawFileNames;
     const indexFileWithExt = fileNames.find((fileName) => fileName.startsWith('index.'));
     if (indexFileWithExt) {
       const fullFilePathWithExt = path.normalize(
@@ -109,7 +119,8 @@ const convertImportDeclarationToImportDetails = (
           const actualPath = getActualPathFromIndexFile(
             fullFilePathWithExt,
             importVar,
-            pluginConfig
+            pluginConfig,
+            options
           );
           if (!acc[actualPath]) {
             acc[actualPath] = [];
@@ -132,7 +143,10 @@ const convertImportDeclarationToImportDetails = (
     `${entryDirectoryName}${path.sep}${importFromPath}`
   );
   const directory = path.dirname(fullFilePathWithoutExt);
-  const fileNames = fs.readdirSync(directory);
+  const rawFileNames = fs.readdirSync(directory);
+  const fileNames = options.excludePattern
+    ? rawFileNames.filter((fileName) => !options.excludePattern!.test(fileName))
+    : rawFileNames;
   const parts = importFromPath.split(path.sep);
   const fileNameReferenceWithoutExtension = parts[parts.length - 1];
   const fileNameWithExtension = fileNames.find((fileName) => {
@@ -152,16 +166,22 @@ const convertImportDeclarationToImportDetails = (
 export const getFileDetails = (
   pathName: string,
   pluginConfig: TPluginConfig,
-  options?: { skipImport?: boolean }
+  options: TOptions,
+  readOptions?: { skipImport?: boolean }
 ): TFileDetails => {
   const fileData = readStateFile(pathName);
   const parseResult: ParseResult = parseSync(pathName, fileData);
   const entryDirectoryName = path.dirname(pathName);
   return parseResult.program.body.reduce<TFileDetails>(
     (total, node) => {
-      if (!options?.skipImport && node.type === 'ImportDeclaration') {
+      if (!readOptions?.skipImport && node.type === 'ImportDeclaration') {
         total.importDetailsList.push(
-          ...convertImportDeclarationToImportDetails(entryDirectoryName, node, pluginConfig)
+          ...convertImportDeclarationToImportDetails(
+            entryDirectoryName,
+            node,
+            pluginConfig,
+            options
+          )
         );
       } else if (node.type === 'ExportNamedDeclaration' || node.type === 'VariableDeclaration') {
         const simpleNode: TSimpleNode | undefined = pluginConfig.parseDeclarationNode(node);
@@ -177,11 +197,12 @@ export const getFileDetails = (
 
 const getFileDetailsFromImportDetails = (
   importDetails: TImportDetails,
-  pluginConfig: TPluginConfig
+  pluginConfig: TPluginConfig,
+  options: TOptions
 ): TFileDetails => {
   const { pathName } = importDetails;
   config.verbose && logMsg(`Reading file from import: ${pathName}`, true);
-  return getFileDetails(pathName, pluginConfig);
+  return getFileDetails(pathName, pluginConfig, options);
 };
 
 export const getEntryNode = (
@@ -198,6 +219,7 @@ export const generateGraph = (
   fileDetails: TFileDetails,
   entryNodeName: string,
   pluginConfig: TPluginConfig,
+  options: TOptions,
   graph: Graph<TSimpleNode> = new Graph()
 ): Graph<TSimpleNode> => {
   const entryNode = getEntryNode(fileDetails, entryNodeName);
@@ -217,7 +239,11 @@ export const generateGraph = (
         details.importVariables.includes(dependency)
       );
       if (importDetails) {
-        const importFileDetails = getFileDetailsFromImportDetails(importDetails, pluginConfig);
+        const importFileDetails = getFileDetailsFromImportDetails(
+          importDetails,
+          pluginConfig,
+          options
+        );
         const importNode = importFileDetails.presentNodes.find((node) => node.name === dependency);
         if (importNode) {
           dependencyNode = importNode;
@@ -238,7 +264,7 @@ export const generateGraph = (
           return;
         }
         config.verbose && logMsg(`Generating graph for ${dependencyNode.name}`, true);
-        generateGraph(fileDetailForDependency, dependencyNode.name, pluginConfig, graph);
+        generateGraph(fileDetailForDependency, dependencyNode.name, pluginConfig, options, graph);
       }
       config.verbose &&
         logMsg(`Adding edge from ${entryNode.name} to ${dependencyNode.name}`, true);

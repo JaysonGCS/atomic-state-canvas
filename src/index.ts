@@ -5,7 +5,6 @@ import { textSync } from 'figlet';
 import fs from 'fs';
 import { writeFile } from 'fs/promises';
 import { setVerboseLevel } from './configUtils';
-import { getExtension } from './fileUtils';
 import { generateGraph, getEntryNode, getFileDetails } from './graphUtils';
 import { logMsg } from './logUtils';
 import { config } from './plugins/recoil';
@@ -16,6 +15,7 @@ program
   .option('-f, --file <value>', 'File')
   .option('-s, --search <value>', 'Search variable name')
   .option('-o, --output <value>', 'Output file name for JSON Canvas')
+  .option('-e, --exclude <value>', 'Exclude glob pattern')
   .parse(process.argv);
 
 // When no arguments are provided, display help
@@ -28,17 +28,9 @@ const options = program.opts();
 const isVerbose = options.verbose;
 setVerboseLevel(isVerbose);
 
-const readStateFile = async (pathName: string): Promise<string> => {
-  try {
-    const extension = getExtension(pathName);
-    if (!(extension === 'ts' || extension === 'js')) {
-      throw new Error(`Unsupported file extension: ${extension}`);
-    }
-    const data = await fs.promises.readFile(pathName, 'utf8');
-    return data;
-  } catch (error) {
-    throw new Error(`Error reading file: ${error}`);
-  }
+const globToRegex = (pattern: string): RegExp => {
+  const regex = pattern.replace(/\./g, '\\.').replace(/\*/g, '.*');
+  return new RegExp(`^${regex}$`);
 };
 
 if (options.file) {
@@ -49,13 +41,18 @@ if (options.file) {
     const searchVariableName = options.search;
     logMsg(`File: ${pathName}`);
     logMsg(`Variable: ${searchVariableName}`);
-    const entryFileDetails = getFileDetails(pathName, config);
+    options.exclude && logMsg(`Exclude glob pattern: ${options.exclude}`);
+    const entryFileDetails = getFileDetails(pathName, config, {
+      excludePattern: options.exclude ? globToRegex(options.exclude) : undefined
+    });
 
     const entryNode = getEntryNode(entryFileDetails, searchVariableName);
     if (!entryNode) {
       throw new Error(`Entry node ${searchVariableName} not found`);
     }
-    const graph = generateGraph(entryFileDetails, searchVariableName, config);
+    const graph = generateGraph(entryFileDetails, searchVariableName, config, {
+      excludePattern: options.exclude ? globToRegex(options.exclude) : undefined
+    });
     const jsonCanvas = graph.generateJsonCanvas(entryNode.id);
     if (options.output) {
       // If output file name is provided, write to file.

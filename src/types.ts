@@ -1,9 +1,7 @@
 import { ExportNamedDeclaration, VariableDeclaration } from 'oxc-parser';
 
-export type TDependencyGraph = {
-  dependencyName: string;
-  dependencyType: string;
-  dependencies?: TDependencyGraph[];
+export type TOptions = {
+  excludePattern?: RegExp;
 };
 
 export type TSimpleNode = {
