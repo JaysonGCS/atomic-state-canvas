@@ -39,6 +39,9 @@ node dist/index.js -f /Users/jaysongcs/Projects/atomic-state-canvas/examples/sta
 
 # Self Referencing Circular Dependency
 node dist/index.js -f /Users/jaysongcs/Projects/atomic-state-canvas/examples/standard/src/storeThree/entrySelector.ts -s entrySelector -o test.canvas
+
+# With glob exclusion
+node dist/index.js -f /Users/jaysongcs/Projects/atomic-state-canvas/examples/standard/src/storeFour/entrySelector.ts -s entrySelector -o test.canvas -e "*.test.*"
 ```
 
 ## Roadmap
