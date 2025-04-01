@@ -1,4 +1,4 @@
-import { atom, selector, selectorFamily } from 'recoil';
+import { selector, selectorFamily } from 'recoil';
 import { dependentSelector, someAtom } from './dependentRecoilSelector';
 import { subDirectoryAtom } from './subDirectory/subDependentSelector';
 

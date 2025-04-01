@@ -63,6 +63,7 @@ if (options.file) {
     } else {
       logMsg(JSON.stringify(jsonCanvas, null, 2));
     }
+    logMsg('Success');
   } else {
     console.error('Missing search variable name. Please provide it via -s <variable_name>');
   }
