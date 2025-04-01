@@ -49,32 +49,64 @@ const getActualPathFromIndexFile = (
   let actualAbsolutePath: string | undefined = undefined;
   simple(indexFileAst.program, {
     ExportAllDeclaration(node) {
+      if (actualAbsolutePath !== undefined) {
+        // If the actual absolute path is already determined, skip further processing
+        return;
+      }
       const actualRelativePathWithoutExt = String(node.source.value);
+      const normalizedActualRelativePathWithoutExt = path.normalize(actualRelativePathWithoutExt);
       const directory = path.dirname(indexFilePath);
       const rawFileNames = fs.readdirSync(directory);
       const fileNames = options.excludePattern
         ? rawFileNames.filter((fileName) => !options.excludePattern!.test(fileName))
         : rawFileNames;
-      const actualFileWithExt = fileNames.find(
-        (fileName) => fileName.split('.')[0] === actualRelativePathWithoutExt.split(path.sep).pop()
+      // There could be multiple files with the same name but different extensions
+      const actualFilesWithExt: string[] = fileNames.filter(
+        (fileName) => fileName.split('.')[0] === normalizedActualRelativePathWithoutExt
       );
-      const potentialActualAbsolutePath = path.normalize(
-        `${directory}${path.sep}${actualFileWithExt}`
-      );
-      // Skip import for this level to avoid potential infinite loop
-      const fileDetails = getFileDetails(potentialActualAbsolutePath, pluginConfig, options, {
-        skipImport: true
+      actualFilesWithExt.forEach((actualFileWithExt) => {
+        const potentialActualAbsolutePath = path.normalize(
+          `${directory}${path.sep}${actualFileWithExt}`
+        );
+        // Skip import for this level to avoid potential infinite loop
+        const fileDetails = getFileDetails(potentialActualAbsolutePath, pluginConfig, options, {
+          skipImport: true
+        });
+        const isImportSource = fileDetails.presentNodes.some((simpleNode) => {
+          return simpleNode.name === importVariableName;
+        });
+        if (isImportSource && actualAbsolutePath === undefined) {
+          actualAbsolutePath = potentialActualAbsolutePath;
+        }
       });
-      const isImportSource = fileDetails.presentNodes.some((simpleNode) => {
-        return simpleNode.name === importVariableName;
-      });
-      if (isImportSource && actualAbsolutePath === undefined) {
-        actualAbsolutePath = potentialActualAbsolutePath;
-      }
     }
   });
   // FIXME: probably shouldn't return indexFilePath since it's wrong
   return actualAbsolutePath ?? indexFilePath;
+};
+
+const getIndexFileFromRelativePath = (
+  directory: string,
+  relativePath: string,
+  options: TOptions
+): string | undefined => {
+  const fullPath =
+    relativePath === '.' ? directory : path.normalize(`${directory}${path.sep}${relativePath}`);
+  try {
+    const isDirectory = fs.lstatSync(fullPath).isDirectory();
+    if (!isDirectory) {
+      return undefined;
+    }
+  } catch (err) {
+    // When the file does not exist, lstatSync will throw an error.
+    return undefined;
+  }
+  const rawFileNames = fs.readdirSync(fullPath);
+  const fileNames = options.excludePattern
+    ? rawFileNames.filter((fileName) => !options.excludePattern!.test(fileName))
+    : rawFileNames;
+  const indexFileWithExt = fileNames.find((fileName) => fileName.startsWith('index.'));
+  return indexFileWithExt ? path.join(fullPath, indexFileWithExt) : undefined;
 };
 
 const convertImportDeclarationToImportDetails = (
@@ -102,42 +134,37 @@ const convertImportDeclarationToImportDetails = (
       }
     ];
   }
-  if (importFromPath === '.') {
-    // Check if the import is exported from index.ts or index.js
-    const rawFileNames = fs.readdirSync(entryDirectoryName);
-    const fileNames = options.excludePattern
-      ? rawFileNames.filter((fileName) => !options.excludePattern!.test(fileName))
-      : rawFileNames;
-    const indexFileWithExt = fileNames.find((fileName) => fileName.startsWith('index.'));
-    if (indexFileWithExt) {
-      const fullFilePathWithExt = path.normalize(
-        `${entryDirectoryName}${path.sep}${indexFileWithExt}`
-      );
-      const importPathToVariablesMap = importVariables.reduce<{ [path: string]: string[] }>(
-        (acc, importVar) => {
-          // Read index file and figure out the true source of where the import is coming from
-          const actualPath = getActualPathFromIndexFile(
-            fullFilePathWithExt,
-            importVar,
-            pluginConfig,
-            options
-          );
-          if (!acc[actualPath]) {
-            acc[actualPath] = [];
-          }
-          acc[actualPath].push(importVar);
-          return acc;
-        },
-        {}
-      );
-      return Object.entries(importPathToVariablesMap).map(([importPath, variables]) => {
-        return {
-          importVariables: variables,
-          pathName: importPath,
-          importType
-        };
-      });
-    }
+  // Check if the import is exported from index.ts or index.js
+  const indexFilePathWithExt = getIndexFileFromRelativePath(
+    entryDirectoryName,
+    importFromPath,
+    options
+  );
+  if (indexFilePathWithExt) {
+    const importPathToVariablesMap = importVariables.reduce<{ [path: string]: string[] }>(
+      (acc, importVar) => {
+        // Read index file and figure out the true source of where the import is coming from
+        const actualPath = getActualPathFromIndexFile(
+          indexFilePathWithExt,
+          importVar,
+          pluginConfig,
+          options
+        );
+        if (!acc[actualPath]) {
+          acc[actualPath] = [];
+        }
+        acc[actualPath].push(importVar);
+        return acc;
+      },
+      {}
+    );
+    return Object.entries(importPathToVariablesMap).map(([importPath, variables]) => {
+      return {
+        importVariables: variables,
+        pathName: importPath,
+        importType
+      };
+    });
   }
   const fullFilePathWithoutExt = path.normalize(
     `${entryDirectoryName}${path.sep}${importFromPath}`
