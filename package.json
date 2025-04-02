@@ -33,7 +33,7 @@
     "acorn-walk": "^8.3.4",
     "commander": "^13.1.0",
     "figlet": "^1.8.0",
-    "oxc-parser": "^0.61.2"
+    "oxc-parser": "^0.62.0"
   },
   "devDependencies": {
     "@types/figlet": "^1.7.0",

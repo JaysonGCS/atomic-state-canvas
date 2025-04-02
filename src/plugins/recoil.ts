@@ -5,7 +5,7 @@ import {
   VariableDeclarator
 } from 'oxc-parser';
 import { TPluginConfig, TSimpleNode } from '../types';
-import { simple } from 'acorn-walk';
+import { base, simple } from 'acorn-walk';
 
 const RECOIL_FUNCTIONS = ['atom', 'selector', 'atomFamily', 'selectorFamily'];
 
@@ -31,27 +31,35 @@ const extractRecoilKey = (argument: Argument): string | undefined => {
 
 const getDependencies = (argument: Argument): string[] => {
   const dependencies: string[] = [];
-  simple(argument, {
-    CallExpression(node) {
-      if (node.callee.type === 'Identifier' && node.callee.name === 'get') {
-        const getterArgument = node.arguments.at(0);
-        if (getterArgument) {
-          if (getterArgument.type === 'Identifier') {
-            // Simply calling atom or selector
-            const dependentAtomOrSelectorName = getterArgument.name;
-            dependencies.push(dependentAtomOrSelectorName);
-          } else if (
-            getterArgument.type === 'CallExpression' &&
-            getterArgument.callee.type === 'Identifier'
-          ) {
-            // Calling atomFamily or selectorFamily
-            const dependentAtomFamilyOrSelectorFamilyName = getterArgument.callee.name;
-            dependencies.push(dependentAtomFamilyOrSelectorFamilyName);
+  simple(
+    argument,
+    {
+      CallExpression(node) {
+        if (node.callee.type === 'Identifier' && node.callee.name === 'get') {
+          const getterArgument = node.arguments.at(0);
+          if (getterArgument) {
+            if (getterArgument.type === 'Identifier') {
+              // Simply calling atom or selector
+              const dependentAtomOrSelectorName = getterArgument.name;
+              dependencies.push(dependentAtomOrSelectorName);
+            } else if (
+              getterArgument.type === 'CallExpression' &&
+              getterArgument.callee.type === 'Identifier'
+            ) {
+              // Calling atomFamily or selectorFamily
+              const dependentAtomFamilyOrSelectorFamilyName = getterArgument.callee.name;
+              dependencies.push(dependentAtomFamilyOrSelectorFamilyName);
+            }
           }
         }
       }
+    },
+    {
+      ...base,
+      // @ts-expect-error -- This is to handle typescript casting expression, acorn-walk would crash if we don't provide a mock implementation
+      TSAsExpression: () => {}
     }
-  });
+  );
   return dependencies;
 };
 
