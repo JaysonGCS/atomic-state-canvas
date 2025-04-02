@@ -2,7 +2,6 @@
 
 import { program } from 'commander';
 import { textSync } from 'figlet';
-import fs from 'fs';
 import { writeFile } from 'fs/promises';
 import { setVerboseLevel } from './configUtils';
 import { generateGraph, getEntryNode, getFileDetails } from './graphUtils';
