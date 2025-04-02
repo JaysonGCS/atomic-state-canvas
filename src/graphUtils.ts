@@ -229,6 +229,21 @@ const getFileDetailsFromImportDetails = (
 ): TFileDetails => {
   const { pathName } = importDetails;
   config.verbose && logMsg(`Reading file from import: ${pathName}`, true);
+  if (importDetails?.importType === 'alias') {
+    // TODO: Implement alias import support
+    logMsg(
+      `Alias import not supported for "${importDetails.importVariables.toString()}" from "${importDetails.pathName}"`
+    );
+    return {
+      importDetailsList: [],
+      presentNodes: importDetails.importVariables.map<TSimpleNode>((variable) => ({
+        dependencies: [],
+        // No way to traverse and find out the true id because we didn't walk the alias import file
+        id: variable,
+        name: `${variable}`
+      }))
+    };
+  }
   return getFileDetails(pathName, pluginConfig, options);
 };
 
@@ -254,8 +269,8 @@ export const generateGraph = (
     throw new Error(`Entry node ${entryNodeName} not found`);
   }
   entryNode.dependencies.forEach((dependency) => {
-    let dependencyNode;
-    let fileDetailForDependency;
+    let dependencyNode: TSimpleNode | undefined;
+    let fileDetailForDependency: TFileDetails | undefined;
     const neighbourNode = fileDetails.presentNodes.find((node) => node.name === dependency);
     if (neighbourNode) {
       dependencyNode = neighbourNode;

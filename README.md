@@ -49,3 +49,4 @@ node dist/index.js -f /Users/jaysongcs/Projects/atomic-state-canvas/examples/sta
 - [ ] Add support for more features in JSON Canvas such as grouping
 - [ ] Better documentation
 - [ ] More comprehensive unit tests
+- [ ] Support for alias import file walk
