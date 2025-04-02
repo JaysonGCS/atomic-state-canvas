@@ -1,4 +1,4 @@
-import { simple } from 'acorn-walk';
+import { base, simple } from 'acorn-walk';
 import fs from 'fs';
 import { ImportDeclaration, ParseResult, parseSync } from 'oxc-parser';
 import path from 'path';
@@ -47,40 +47,48 @@ const getActualPathFromIndexFile = (
   const indexFileContent = readStateFile(indexFilePath);
   const indexFileAst = parseSync(indexFilePath, indexFileContent);
   let actualAbsolutePath: string | undefined = undefined;
-  simple(indexFileAst.program, {
-    ExportAllDeclaration(node) {
-      if (actualAbsolutePath !== undefined) {
-        // If the actual absolute path is already determined, skip further processing
-        return;
-      }
-      const actualRelativePathWithoutExt = String(node.source.value);
-      const normalizedActualRelativePathWithoutExt = path.normalize(actualRelativePathWithoutExt);
-      const directory = path.dirname(indexFilePath);
-      const rawFileNames = fs.readdirSync(directory);
-      const fileNames = options.excludePattern
-        ? rawFileNames.filter((fileName) => !options.excludePattern!.test(fileName))
-        : rawFileNames;
-      // There could be multiple files with the same name but different extensions
-      const actualFilesWithExt: string[] = fileNames.filter(
-        (fileName) => fileName.split('.')[0] === normalizedActualRelativePathWithoutExt
-      );
-      actualFilesWithExt.forEach((actualFileWithExt) => {
-        const potentialActualAbsolutePath = path.normalize(
-          `${directory}${path.sep}${actualFileWithExt}`
-        );
-        // Skip import for this level to avoid potential infinite loop
-        const fileDetails = getFileDetails(potentialActualAbsolutePath, pluginConfig, options, {
-          skipImport: true
-        });
-        const isImportSource = fileDetails.presentNodes.some((simpleNode) => {
-          return simpleNode.name === importVariableName;
-        });
-        if (isImportSource && actualAbsolutePath === undefined) {
-          actualAbsolutePath = potentialActualAbsolutePath;
+  simple(
+    indexFileAst.program,
+    {
+      ExportAllDeclaration(node) {
+        if (actualAbsolutePath !== undefined) {
+          // If the actual absolute path is already determined, skip further processing
+          return;
         }
-      });
+        const actualRelativePathWithoutExt = String(node.source.value);
+        const normalizedActualRelativePathWithoutExt = path.normalize(actualRelativePathWithoutExt);
+        const directory = path.dirname(indexFilePath);
+        const rawFileNames = fs.readdirSync(directory);
+        const fileNames = options.excludePattern
+          ? rawFileNames.filter((fileName) => !options.excludePattern!.test(fileName))
+          : rawFileNames;
+        // There could be multiple files with the same name but different extensions
+        const actualFilesWithExt: string[] = fileNames.filter(
+          (fileName) => fileName.split('.')[0] === normalizedActualRelativePathWithoutExt
+        );
+        actualFilesWithExt.forEach((actualFileWithExt) => {
+          const potentialActualAbsolutePath = path.normalize(
+            `${directory}${path.sep}${actualFileWithExt}`
+          );
+          // Skip import for this level to avoid potential infinite loop
+          const fileDetails = getFileDetails(potentialActualAbsolutePath, pluginConfig, options, {
+            skipImport: true
+          });
+          const isImportSource = fileDetails.presentNodes.some((simpleNode) => {
+            return simpleNode.name === importVariableName;
+          });
+          if (isImportSource && actualAbsolutePath === undefined) {
+            actualAbsolutePath = potentialActualAbsolutePath;
+          }
+        });
+      }
+    },
+    {
+      ...base,
+      // @ts-expect-error -- This is to handle typescript casting expression, acorn-walk would crash if we don't provide a mock implementation
+      TSAsExpression: () => {}
     }
-  });
+  );
   // FIXME: probably shouldn't return indexFilePath since it's wrong
   return actualAbsolutePath ?? indexFilePath;
 };
@@ -118,13 +126,21 @@ const convertImportDeclarationToImportDetails = (
   const importFromPath = importDeclaration.source.value;
   const importType = isImportFromPathAlias(importFromPath) ? 'alias' : 'file';
   const importVariables: string[] = [];
-  simple(importDeclaration, {
-    ImportSpecifier(node) {
-      if (node.imported.type === 'Identifier') {
-        importVariables.push(node.imported.name);
+  simple(
+    importDeclaration,
+    {
+      ImportSpecifier(node) {
+        if (node.imported.type === 'Identifier') {
+          importVariables.push(node.imported.name);
+        }
       }
+    },
+    {
+      ...base,
+      // @ts-expect-error -- This is to handle typescript casting expression, acorn-walk would crash if we don't provide a mock implementation
+      TSAsExpression: () => {}
     }
-  });
+  );
   if (importType === 'alias') {
     return [
       {
