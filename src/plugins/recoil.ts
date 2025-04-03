@@ -57,7 +57,8 @@ const getDependencies = (argument: Argument): string[] => {
     {
       ...base,
       // @ts-expect-error -- This is to handle typescript casting expression, acorn-walk would crash if we don't provide a mock implementation
-      TSAsExpression: () => {}
+      TSAsExpression: () => {},
+      TSSatisfiesExpression: () => {}
     }
   );
   return dependencies;
