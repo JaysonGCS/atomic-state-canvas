@@ -8,6 +8,8 @@ export const subDirectoryAtom = atom({
       const fun = (e) => {
         // This casting would trigger a type of acorn-walk error
         const { detail } = e as CustomEvent;
+        // This satisfies would trigger a type of acorn-walk error
+        const {} = e satisfies {};
         setSelf('newValue');
       };
     }
