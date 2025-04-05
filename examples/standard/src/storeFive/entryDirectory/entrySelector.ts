@@ -21,6 +21,7 @@ export const entrySelector = selector<string>({
     get(someAtom);
     get(neighbourSelectorFamily(''));
     get(neighbourSelectorFamily(''));
+    get(dependentSelector);
     return '';
   },
   cachePolicy_UNSTABLE: { eviction: 'most-recent' }
