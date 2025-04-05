@@ -3,7 +3,7 @@
 import { program } from 'commander';
 import { textSync } from 'figlet';
 import { writeFile } from 'fs/promises';
-import { setVerboseLevel } from './configUtils';
+import { globToRegex, setVerboseLevel } from './configUtils';
 import { generateGraph, getEntryNode, getFileDetails } from './graphUtils';
 import { logMsg } from './logUtils';
 import { config } from './plugins/recoil';
@@ -26,11 +26,6 @@ const options = program.opts();
 
 const isVerbose = options.verbose;
 setVerboseLevel(isVerbose);
-
-const globToRegex = (pattern: string): RegExp => {
-  const regex = pattern.replace(/\./g, '\\.').replace(/\*/g, '.*');
-  return new RegExp(`^${regex}$`);
-};
 
 if (options.file) {
   if (options.search) {
