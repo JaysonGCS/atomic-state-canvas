@@ -30,7 +30,7 @@ const extractRecoilKey = (argument: Argument): string | undefined => {
 };
 
 const getDependencies = (argument: Argument): string[] => {
-  const dependencies: string[] = [];
+  const dependencySet: Set<string> = new Set();
   simple(
     argument,
     {
@@ -41,14 +41,14 @@ const getDependencies = (argument: Argument): string[] => {
             if (getterArgument.type === 'Identifier') {
               // Simply calling atom or selector
               const dependentAtomOrSelectorName = getterArgument.name;
-              dependencies.push(dependentAtomOrSelectorName);
+              dependencySet.add(dependentAtomOrSelectorName);
             } else if (
               getterArgument.type === 'CallExpression' &&
               getterArgument.callee.type === 'Identifier'
             ) {
               // Calling atomFamily or selectorFamily
               const dependentAtomFamilyOrSelectorFamilyName = getterArgument.callee.name;
-              dependencies.push(dependentAtomFamilyOrSelectorFamilyName);
+              dependencySet.add(dependentAtomFamilyOrSelectorFamilyName);
             }
           }
         }
@@ -61,7 +61,7 @@ const getDependencies = (argument: Argument): string[] => {
       TSSatisfiesExpression: () => {}
     }
   );
-  return dependencies;
+  return Array.from(dependencySet);
 };
 
 const getVariableDeclaratorDetails = (
