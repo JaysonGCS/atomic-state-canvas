@@ -11,6 +11,19 @@
         "main": "apps/cli/src/index.ts"
       },
       "dependsOn": ["^build"]
+    },
+    "postbuild": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "npx tsc aliasReplacer.ts && npx tsc-alias -p apps/cli/tsconfig.json --verbose"
+      }
+    },
+    "build-and-alias": {
+      "executor": "nx:run-commands",
+      "options": {
+        "commands": ["nx run cli:build", "nx run cli:postbuild"],
+        "parallel": false
+      }
     }
   }
 }

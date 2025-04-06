@@ -1,7 +1,7 @@
 {
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "outDir": "../../dist/out-tsc/libs/core",
+    "outDir": "../../dist/libs/core",
     "composite": true
   },
   "include": ["src/**/*"]

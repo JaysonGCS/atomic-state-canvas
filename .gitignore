@@ -1,4 +1,5 @@
 *.canvas
+aliasReplacer.js
 
 .DS_store
 */.DS_store

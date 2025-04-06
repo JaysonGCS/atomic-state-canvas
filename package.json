@@ -6,8 +6,8 @@
     "atomic-state-canvas": "./dist/apps/cli/src/index.js"
   },
   "scripts": {
-    "build": "nx build cli",
-    "build:tsc": "npx tsc --build",
+    "build": "nx run cli:build-and-alias",
+    "build:tsc": "npx tsc --build && npx tsc aliasReplacer.ts && npx tsc-alias -p apps/cli/tsconfig.json --verbose --debug",
     "build:watch": "npx tsc --build --watch",
     "test": "echo \"Error: no test specified\" && exit 1",
     "lint": "eslint src/**",
@@ -52,6 +52,7 @@
     "nx": "20.7.1",
     "prettier": "^3.3.2",
     "semantic-release": "^24.2.3",
+    "tsc-alias": "^1.8.13",
     "typescript": "^5.8.2"
   },
   "files": [

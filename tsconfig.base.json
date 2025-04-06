@@ -13,5 +13,21 @@
       "@atomic-state-canvas/core": ["dist/libs/core", "libs/core/src/index.ts"],
       "@atomic-state-canvas/core/*": ["libs/core/src/*"]
     }
+  },
+  "tsc-alias": {
+    "resolveFullPaths": true,
+    "replacers": {
+      "default": {
+        "enabled": false
+      },
+      "base-url": {
+        "enabled": false
+      },
+      "custom": {
+        "enabled": true,
+        "fileExtensions": "{js}",
+        "file": "./aliasReplacer.js"
+      }
+    }
   }
 }
