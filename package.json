@@ -1,9 +1,9 @@
 {
   "name": "atomic-state-canvas",
   "version": "0.0.1",
-  "main": "dist/apps/cli/index.js",
+  "main": "dist/apps/cli/src/index.js",
   "bin": {
-    "atomic-state-canvas": "./dist/apps/cli/index.js"
+    "atomic-state-canvas": "./dist/apps/cli/src/index.js"
   },
   "scripts": {
     "build": "nx build cli",
