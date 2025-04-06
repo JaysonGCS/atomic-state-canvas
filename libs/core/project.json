@@ -1,0 +1,15 @@
+{
+  "name": "core",
+  "projectType": "library",
+  "sourceRoot": "libs/core/src",
+  "targets": {
+    "build": {
+      "executor": "@nx/js:tsc",
+      "options": {
+        "outputPath": "dist/libs/core",
+        "tsConfig": "libs/core/tsconfig.json",
+        "main": "libs/core/src/index.ts"
+      }
+    }
+  }
+}

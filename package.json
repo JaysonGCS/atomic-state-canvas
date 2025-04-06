@@ -1,13 +1,14 @@
 {
   "name": "atomic-state-canvas",
   "version": "0.0.1",
-  "main": "dist/index.js",
+  "main": "dist/apps/cli/index.js",
   "bin": {
-    "atomic-state-canvas": "./dist/index.js"
+    "atomic-state-canvas": "./dist/apps/cli/index.js"
   },
   "scripts": {
-    "build": "npx tsc",
-    "build:watch": "npx tsc --watch",
+    "build": "nx build cli",
+    "build:tsc": "npx tsc --build",
+    "build:watch": "npx tsc --build --watch",
     "test": "echo \"Error: no test specified\" && exit 1",
     "lint": "eslint src/**",
     "semantic-release": "semantic-release"
@@ -36,6 +37,10 @@
     "oxc-parser": "^0.62.0"
   },
   "devDependencies": {
+    "@nx/js": "^20.7.1",
+    "@swc-node/register": "~1.9.1",
+    "@swc/core": "~1.5.7",
+    "@swc/helpers": "~0.5.11",
     "@types/figlet": "^1.7.0",
     "@types/node": "^22.13.14",
     "@typescript-eslint/parser": "7.3.0",
@@ -44,6 +49,7 @@
     "eslint-plugin-import": "^2.30.0",
     "eslint-plugin-perfectionist": "2.10.0",
     "eslint-plugin-prettier": "^5.2.1",
+    "nx": "20.7.1",
     "prettier": "^3.3.2",
     "semantic-release": "^24.2.3",
     "typescript": "^5.8.2"

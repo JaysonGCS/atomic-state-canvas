@@ -1,0 +1,17 @@
+{
+  "compilerOptions": {
+    "declaration": true,
+    "declarationMap": true,
+    "target": "es6",
+    "module": "commonjs",
+    "sourceMap": true,
+    "esModuleInterop": true,
+    "moduleResolution": "node",
+    "baseUrl": ".",
+    "outDir": "dist",
+    "paths": {
+      "@atomic-state-canvas/core": ["dist/libs/core", "libs/core/src/index.ts"],
+      "@atomic-state-canvas/core/*": ["libs/core/src/*"]
+    }
+  }
+}
