@@ -3,10 +3,15 @@
 import { program } from 'commander';
 import { textSync } from 'figlet';
 import { writeFile } from 'fs/promises';
-import { globToRegex, setVerboseLevel } from './configUtils';
-import { generateGraph, getEntryNode, getFileDetails } from './graphUtils';
-import { logMsg } from './logUtils';
-import { config } from './plugins/recoil';
+import {
+  config,
+  generateGraph,
+  getEntryNode,
+  getFileDetails,
+  globToRegex,
+  logMsg,
+  setVerboseLevel
+} from '@atomic-state-canvas/core';
 
 program
   .description('A CLI tool for visualizing atomic state relationships using JSON Canvas')

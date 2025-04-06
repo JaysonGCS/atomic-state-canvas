@@ -5,7 +5,7 @@ import path from 'path';
 import { Graph } from './dataStructure';
 import { getExtension } from './fileUtils';
 import { TOptions, TPluginConfig, TSimpleNode } from './types';
-import { config } from './configUtils';
+import { cliConfig } from './configUtils';
 import { logMsg } from './logUtils';
 
 const ALLOWED_EXTENSIONS = ['ts', 'js', 'tsx', 'jsx'];
@@ -246,7 +246,7 @@ const getFileDetailsFromImportDetails = (
   options: TOptions
 ): TFileDetails => {
   const { pathName } = importDetails;
-  config.verbose && logMsg(`Reading file from import: ${pathName}`, true);
+  cliConfig.verbose && logMsg(`Reading file from import: ${pathName}`, true);
   if (importDetails?.importType === 'alias') {
     // TODO: Implement alias import support
     logMsg(
@@ -323,10 +323,10 @@ export const generateGraph = (
           logMsg(`Cycle detected between ${entryNode.name} and ${dependencyNode.name}`);
           return;
         }
-        config.verbose && logMsg(`Generating graph for ${dependencyNode.name}`, true);
+        cliConfig.verbose && logMsg(`Generating graph for ${dependencyNode.name}`, true);
         generateGraph(fileDetailForDependency, dependencyNode.name, pluginConfig, options, graph);
       }
-      config.verbose &&
+      cliConfig.verbose &&
         logMsg(`Adding edge from ${entryNode.name} to ${dependencyNode.name}`, true);
       graph.addEdge(entryNode, dependencyNode);
     }

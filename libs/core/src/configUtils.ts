@@ -1,9 +1,9 @@
-export const config = {
+export const cliConfig = {
   verbose: false // Default value
 };
 
 export const setVerboseLevel = (value: boolean) => {
-  config.verbose = value;
+  cliConfig.verbose = value;
 };
 
 export const globToRegex = (pattern: string): RegExp => {

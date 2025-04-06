@@ -1,0 +1,16 @@
+{
+  "name": "cli",
+  "projectType": "application",
+  "sourceRoot": "apps/cli/src",
+  "targets": {
+    "build": {
+      "executor": "@nx/js:tsc",
+      "options": {
+        "outputPath": "dist/apps/cli",
+        "tsConfig": "apps/cli/tsconfig.json",
+        "main": "apps/cli/src/index.ts"
+      },
+      "dependsOn": ["^build"]
+    }
+  }
+}

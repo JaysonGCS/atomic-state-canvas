@@ -166,3 +166,8 @@ dist
 
 # Documentation
 /docs
+
+
+
+.nx/cache
+.nx/workspace-data
