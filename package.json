@@ -8,7 +8,7 @@
   "scripts": {
     "build": "nx run cli:build-and-alias",
     "build:tsc": "npx tsc --build && npx tsc aliasReplacer.ts && npx tsc-alias -p apps/cli/tsconfig.json --verbose --debug",
-    "build:watch": "npx tsc --build --watch",
+    "build:tsc-watch": "npx tsc --build --watch",
     "test": "echo \"Error: no test specified\" && exit 1",
     "lint": "eslint src/**",
     "semantic-release": "semantic-release"

@@ -3,15 +3,7 @@
 import { program } from 'commander';
 import { textSync } from 'figlet';
 import { writeFile } from 'fs/promises';
-import {
-  config,
-  generateGraph,
-  getEntryNode,
-  getFileDetails,
-  globToRegex,
-  logMsg,
-  setVerboseLevel
-} from '@atomic-state-canvas/core';
+import { generateAtomicStateGraph, logMsg, setVerboseLevel } from '@atomic-state-canvas/core';
 
 program
   .description('A CLI tool for visualizing atomic state relationships using JSON Canvas')
@@ -41,18 +33,11 @@ if (options.file) {
     logMsg(`File: ${pathName}`);
     logMsg(`Variable: ${searchVariableName}`);
     options.exclude && logMsg(`Exclude glob pattern: ${options.exclude}`);
-    const entryFileDetails = getFileDetails(pathName, config, {
-      excludePattern: options.exclude ? globToRegex(options.exclude) : undefined
+    const { graph, entryNodeId } = generateAtomicStateGraph(pathName, 'recoil', {
+      searchVariableName,
+      excludePatternInGlob: options.exclude
     });
-
-    const entryNode = getEntryNode(entryFileDetails, searchVariableName);
-    if (!entryNode) {
-      throw new Error(`Entry node ${searchVariableName} not found`);
-    }
-    const graph = generateGraph(entryFileDetails, searchVariableName, config, {
-      excludePattern: options.exclude ? globToRegex(options.exclude) : undefined
-    });
-    const jsonCanvas = graph.generateJsonCanvas(entryNode.id);
+    const jsonCanvas = graph.generateJsonCanvas(entryNodeId);
     if (options.output) {
       // If output file name is provided, write to file.
       writeFile(options.output, JSON.stringify(jsonCanvas));
