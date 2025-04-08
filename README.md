@@ -32,16 +32,16 @@ npm build:watch
 ### Examples
 ```bash
 # Standard
-node dist/index.js -f /Users/jaysongcs/Projects/atomic-state-canvas/examples/standard/src/storeOne/entrySelector.ts -s entrySelector -o test.canvas
+node dist/apps/cli/src/index.js -f examples/standard/src/store1/entrySelector.ts -s entrySelector -o test.canvas
 
 # Circular Dependency
-node dist/index.js -f /Users/jaysongcs/Projects/atomic-state-canvas/examples/standard/src/storeTwo/entrySelector.ts -s entrySelector -o test.canvas
+node dist/apps/cli/src/index.js -f examples/standard/src/store2/entrySelector.ts -s entrySelector -o test.canvas
 
 # Self Referencing Circular Dependency
-node dist/index.js -f /Users/jaysongcs/Projects/atomic-state-canvas/examples/standard/src/storeThree/entrySelector.ts -s entrySelector -o test.canvas
+node dist/apps/cli/src/index.js -f examples/standard/src/store3/entrySelector.ts -s entrySelector -o test.canvas
 
 # With glob exclusion
-node dist/index.js -f /Users/jaysongcs/Projects/atomic-state-canvas/examples/standard/src/storeFour/entrySelector.ts -s entrySelector -o test.canvas -e "*.test.*"
+node dist/apps/cli/src/index.js -f examples/standard/src/store4/entrySelector.ts -s entrySelector -o test.canvas -e "*.test.*"
 ```
 
 ## Roadmap
