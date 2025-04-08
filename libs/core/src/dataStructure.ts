@@ -44,7 +44,7 @@ export type TJSonCanvas = {
 };
 
 export class Graph<T extends { id: string; name: string }> {
-  private adjacencyList: Map<string, string[]>;
+  private adjacencyList: Map<string, Set<string>>;
   private edgeMap: Map<string, { source: string; target: string }>;
   private nodeMap: Map<string, T>;
   private cyclicNodeIdReference: Set<string>;
@@ -58,20 +58,24 @@ export class Graph<T extends { id: string; name: string }> {
 
   addEdge(source: T, target: T): void {
     if (!this.adjacencyList.has(source.id)) {
-      this.adjacencyList.set(source.id, []);
+      this.adjacencyList.set(source.id, new Set());
     }
     if (!this.adjacencyList.has(target.id)) {
-      this.adjacencyList.set(target.id, []);
+      this.adjacencyList.set(target.id, new Set());
     }
-    this.adjacencyList.get(source.id)!.push(target.id);
+    this.adjacencyList.get(source.id).add(target.id);
     this.edgeMap.set(`${target.id}-${source.id}`, { source: source.id, target: target.id });
     this.nodeMap.set(source.id, source);
     this.nodeMap.set(target.id, target);
   }
 
-  addNodeMetadata(param: { type: 'cyclic'; sourceId: string; targetId: string }): void {
+  addNodeMetadata(param: {
+    type: 'cyclic' | 'self-reference';
+    sourceId: string;
+    targetId: string;
+  }): void {
     const { type } = param;
-    if (type === 'cyclic') {
+    if (type === 'cyclic' || type === 'self-reference') {
       const { sourceId, targetId } = param;
       this.cyclicNodeIdReference.add(sourceId);
       this.cyclicNodeIdReference.add(targetId);
@@ -112,24 +116,27 @@ export class Graph<T extends { id: string; name: string }> {
       return [];
     }
     visited.add(nodeId);
-    return this.adjacencyList.get(nodeId)!.reduce<TJsonCanvasNode[]>((acc, neighborId, idx) => {
-      const neighborNode = this.nodeMap.get(neighborId)!;
-      const children = this.generateJsonCanvasNodes(neighborId, level + 1, visited);
-      acc.push(
-        {
-          id: neighborNode.id,
-          type: 'text',
-          text: neighborNode.name,
-          x: level * DEFAULT_X_OFFSET * (DEFAULT_DIRECTION === 'left-to-right' ? -1 : 1),
-          y: idx * DEFAULT_Y_OFFSET,
-          width: DEFAULT_NODE_WIDTH,
-          height: DEFAULT_NODE_HEIGHT,
-          color: this.cyclicNodeIdReference.has(neighborNode.id) ? '1' : '4'
-        },
-        ...children
-      );
-      return acc;
-    }, []);
+    return Array.from(this.adjacencyList.get(nodeId)).reduce<TJsonCanvasNode[]>(
+      (acc, neighborId, idx) => {
+        const neighborNode = this.nodeMap.get(neighborId)!;
+        const children = this.generateJsonCanvasNodes(neighborId, level + 1, visited);
+        acc.push(
+          {
+            id: neighborNode.id,
+            type: 'text',
+            text: neighborNode.name,
+            x: level * DEFAULT_X_OFFSET * (DEFAULT_DIRECTION === 'left-to-right' ? -1 : 1),
+            y: idx * DEFAULT_Y_OFFSET,
+            width: DEFAULT_NODE_WIDTH,
+            height: DEFAULT_NODE_HEIGHT,
+            color: this.cyclicNodeIdReference.has(neighborNode.id) ? '1' : '4'
+          },
+          ...children
+        );
+        return acc;
+      },
+      []
+    );
   }
 
   generateJsonCanvas(rootId: string): TJSonCanvas {

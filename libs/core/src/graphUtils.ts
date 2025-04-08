@@ -274,18 +274,44 @@ export const getEntryNode = (
   });
   return entryNode;
 };
+const visitedNodeId = new Set();
 
 export const generateGraph = (
   fileDetails: TFileDetails,
   entryNodeName: string,
   pluginConfig: TPluginConfig,
   options: TOptions,
+  prevNodeId: string | null,
   graph: Graph<TSimpleNode> = new Graph()
 ): Graph<TSimpleNode> => {
   const entryNode = getEntryNode(fileDetails, entryNodeName);
   if (!entryNode) {
     throw new Error(`Entry node ${entryNodeName} not found`);
   }
+  const entryNodeId = entryNode.id;
+  if (prevNodeId !== null && visitedNodeId.has(entryNodeId)) {
+    if (prevNodeId === entryNodeId) {
+      graph.addNodeMetadata({
+        type: 'self-reference',
+        sourceId: prevNodeId,
+        targetId: entryNodeId
+      });
+      logMsg(`Self reference detected for ${entryNodeId}`);
+      return;
+    }
+    const hasCyclic = graph.hasCycle(entryNodeId, prevNodeId);
+    if (hasCyclic) {
+      graph.addNodeMetadata({
+        type: 'cyclic',
+        sourceId: prevNodeId,
+        targetId: entryNodeId
+      });
+      logMsg(`Cycle detected between ${prevNodeId} and ${entryNodeId}`);
+    }
+    // Terminate here regardless because the entry node has been visited.
+    return;
+  }
+  visitedNodeId.add(entryNodeId);
   entryNode.dependencies.forEach((dependency) => {
     let dependencyNode: TSimpleNode | undefined;
     let fileDetailForDependency: TFileDetails | undefined;
@@ -312,23 +338,22 @@ export const generateGraph = (
       }
     }
     if (dependencyNode && fileDetailForDependency) {
-      // Here we need to check if dependencyNode has dependencies as well. If it has dependencies, we need to recursively generate the graph for those dependencies as well.
-      if (dependencyNode.dependencies.length !== 0) {
-        if (graph.hasCycle(dependencyNode.id, entryNode.id)) {
-          graph.addNodeMetadata({
-            type: 'cyclic',
-            sourceId: entryNode.id,
-            targetId: dependencyNode.id
-          });
-          logMsg(`Cycle detected between ${entryNode.name} and ${dependencyNode.name}`);
-          return;
-        }
-        cliConfig.verbose && logMsg(`Generating graph for ${dependencyNode.name}`, true);
-        generateGraph(fileDetailForDependency, dependencyNode.name, pluginConfig, options, graph);
-      }
       cliConfig.verbose &&
         logMsg(`Adding edge from ${entryNode.name} to ${dependencyNode.name}`, true);
       graph.addEdge(entryNode, dependencyNode);
+      // Here we need to check if dependencyNode has dependencies as well. If it has dependencies, we need to recursively generate the graph for those dependencies as well.
+      if (dependencyNode.dependencies.length !== 0) {
+        cliConfig.verbose && logMsg(`Generating graph for ${dependencyNode.name}`, true);
+        // This step traverse to the next level to repeat the step for the dependent node
+        generateGraph(
+          fileDetailForDependency,
+          dependencyNode.name,
+          pluginConfig,
+          options,
+          entryNodeId,
+          graph
+        );
+      }
     }
   });
   return graph;
