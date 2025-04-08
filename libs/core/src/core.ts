@@ -20,9 +20,15 @@ export const generateAtomicStateGraph = (
   if (!entryNode) {
     throw new Error(`Entry node ${searchVariableName} not found`);
   }
-  const graph = generateGraph(entryFileDetails, searchVariableName, config, {
-    excludePattern
-  });
+  const graph = generateGraph(
+    entryFileDetails,
+    searchVariableName,
+    config,
+    {
+      excludePattern
+    },
+    null
+  );
 
   return {
     graph,
