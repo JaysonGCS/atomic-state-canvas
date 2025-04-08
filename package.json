@@ -6,7 +6,8 @@
     "atomic-state-canvas": "./dist/apps/cli/src/index.js"
   },
   "scripts": {
-    "build": "nx run cli:build-and-alias",
+    "build": "npx nx run cli:build-and-alias",
+    "build:watch": "npx nx watch --projects=cli --includeDependentProjects --verbose -- npx nx run cli:build-and-alias",
     "build:tsc": "npx tsc --build && npx tsc aliasReplacer.ts && npx tsc-alias -p apps/cli/tsconfig.json --verbose --debug",
     "build:tsc-watch": "npx tsc --build --watch",
     "test": "echo \"Error: no test specified\" && exit 1",
@@ -21,7 +22,8 @@
     "flowchart",
     "atomic state",
     "visualization",
-    "atomic state visualization"
+    "atomic state visualization",
+    "recoil graph"
   ],
   "author": {
     "name": "Jayson Goh",
@@ -30,7 +32,6 @@
   "license": "MIT",
   "description": "A CLI tool for visualizing atomic state relationships using JSON Canvas.",
   "dependencies": {
-    "acorn": "^8.14.1",
     "acorn-walk": "^8.3.4",
     "commander": "^13.1.0",
     "figlet": "^1.8.0",
@@ -38,11 +39,11 @@
   },
   "devDependencies": {
     "@nx/js": "^20.7.1",
-    "@swc-node/register": "~1.9.1",
-    "@swc/core": "~1.5.7",
+    "@swc-node/register": "~1.10.10",
+    "@swc/core": "~1.11.18",
     "@swc/helpers": "~0.5.11",
     "@types/figlet": "^1.7.0",
-    "@types/node": "^22.13.14",
+    "@types/node": "^22.14.0",
     "@typescript-eslint/parser": "7.3.0",
     "eslint": "^8.57.1",
     "eslint-config-prettier": "^9.1.0",
@@ -50,10 +51,10 @@
     "eslint-plugin-perfectionist": "2.10.0",
     "eslint-plugin-prettier": "^5.2.1",
     "nx": "20.7.1",
-    "prettier": "^3.3.2",
+    "prettier": "^3.5.3",
     "semantic-release": "^24.2.3",
     "tsc-alias": "^1.8.13",
-    "typescript": "^5.8.2"
+    "typescript": "^5.8.3"
   },
   "files": [
     "dist"
