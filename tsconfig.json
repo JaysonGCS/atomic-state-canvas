@@ -1,5 +1,5 @@
 {
   "extends": "./tsconfig.base.json",
   "files": [],
-  "references": [{ "path": "apps/cli" }, { "path": "libs/core" }]
+  "references": [{ "path": "apps/asc-cli" }, { "path": "libs/core" }]
 }

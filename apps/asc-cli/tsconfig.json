@@ -1,7 +1,7 @@
 {
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "outDir": "../../dist/apps/cli"
+    "outDir": "../../dist/apps/asc-cli"
   },
   "include": ["src/**/*"],
   "references": [{ "path": "../../libs/core" }]

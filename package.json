@@ -1,14 +1,14 @@
 {
   "name": "atomic-state-canvas",
   "version": "0.0.1",
-  "main": "dist/apps/cli/src/index.js",
+  "main": "dist/apps/asc-cli/src/index.js",
   "bin": {
-    "atomic-state-canvas": "./dist/apps/cli/src/index.js"
+    "atomic-state-canvas": "./dist/apps/asc-cli/src/index.js"
   },
   "scripts": {
-    "build": "npx nx run cli:build-and-alias",
-    "build:watch": "npx nx watch --projects=cli --includeDependentProjects --verbose -- npx nx run cli:build-and-alias",
-    "build:tsc": "npx tsc --build && npx tsc aliasReplacer.ts && npx tsc-alias -p apps/cli/tsconfig.json --verbose --debug",
+    "build": "npx nx run asc-cli:build-and-alias",
+    "build:watch": "npx nx watch --projects=asc-cli --includeDependentProjects --verbose -- npx nx run asc-cli:build-and-alias",
+    "build:tsc": "npx tsc --build && npx tsc aliasReplacer.ts && npx tsc-alias -p apps/asc-cli/tsconfig.json --verbose --debug",
     "build:tsc-watch": "npx tsc --build --watch",
     "test": "echo \"Error: no test specified\" && exit 1",
     "lint": "eslint src/**",
