@@ -32,16 +32,16 @@ npm build:watch
 ### Examples
 ```bash
 # Standard
-node dist/apps/cli/src/index.js -f examples/standard/src/store1/entrySelector.ts -s entrySelector -o test.canvas
+node dist/apps/asc-cli/src/index.js -f examples/standard/src/store1/entrySelector.ts -s entrySelector -o test.canvas
 
 # Circular Dependency
-node dist/apps/cli/src/index.js -f examples/standard/src/store2/entrySelector.ts -s entrySelector -o test.canvas
+node dist/apps/asc-cli/src/index.js -f examples/standard/src/store2/entrySelector.ts -s entrySelector -o test.canvas
 
 # Self Referencing Circular Dependency
-node dist/apps/cli/src/index.js -f examples/standard/src/store3/entrySelector.ts -s entrySelector -o test.canvas
+node dist/apps/asc-cli/src/index.js -f examples/standard/src/store3/entrySelector.ts -s entrySelector -o test.canvas
 
 # With glob exclusion
-node dist/apps/cli/src/index.js -f examples/standard/src/store4/entrySelector.ts -s entrySelector -o test.canvas -e "*.test.*"
+node dist/apps/asc-cli/src/index.js -f examples/standard/src/store4/entrySelector.ts -s entrySelector -o test.canvas -e "*.test.*"
 ```
 
 ## Roadmap

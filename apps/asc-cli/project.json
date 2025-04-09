@@ -1,27 +1,27 @@
 {
-  "name": "cli",
+  "name": "asc-cli",
   "projectType": "application",
-  "sourceRoot": "apps/cli/src",
+  "sourceRoot": "apps/asc-cli/src",
   "targets": {
     "build": {
       "executor": "@nx/js:tsc",
       "options": {
-        "outputPath": "dist/apps/cli",
-        "tsConfig": "apps/cli/tsconfig.json",
-        "main": "apps/cli/src/index.ts"
+        "outputPath": "dist/apps/asc-cli",
+        "tsConfig": "apps/asc-cli/tsconfig.json",
+        "main": "apps/asc-cli/src/index.ts"
       },
       "dependsOn": ["^build"]
     },
     "postbuild": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "npx tsc aliasReplacer.ts && npx tsc-alias -p apps/cli/tsconfig.json --verbose"
+        "command": "npx tsc aliasReplacer.ts && npx tsc-alias -p apps/asc-cli/tsconfig.json --verbose"
       }
     },
     "build-and-alias": {
       "executor": "nx:run-commands",
       "options": {
-        "commands": ["nx run cli:build", "nx run cli:postbuild"],
+        "commands": ["nx run asc-cli:build", "nx run asc-cli:postbuild"],
         "parallel": false
       }
     }
