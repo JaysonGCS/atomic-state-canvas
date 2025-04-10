@@ -9,7 +9,7 @@
         "outputPath": "dist/apps/asc-cli",
         "tsConfig": "apps/asc-cli/tsconfig.json",
         "main": "apps/asc-cli/src/index.ts",
-        "assets": ["LICENSE"]
+        "generatePackageJson": false
       },
       "dependsOn": ["^build"]
     },
