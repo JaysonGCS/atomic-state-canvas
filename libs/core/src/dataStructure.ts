@@ -40,6 +40,23 @@ const generatePosition = (
   }
 };
 
+const cycleDetection = (graph: Map<string, string[]>, source: string, target: string) => {
+  const neighbours = graph.get(target).slice();
+  const visitedNodeIds = [target];
+  let hasCycle = false;
+  while (neighbours.length) {
+    const neighbour = neighbours.shift()!;
+    visitedNodeIds.push(neighbour);
+    if (neighbour === source) {
+      hasCycle = true;
+      break;
+    }
+    neighbours.push(...(graph.get(neighbour) ?? []));
+  }
+  // Return the cycle node id list
+  return { hasCycle, visitedNodeIds };
+};
+
 const isLeafNodeAtLastLevel = (
   leafNodeId: string,
   nodeToLevelMap: Map<string, number>,
@@ -186,18 +203,17 @@ export class Graph<T extends { id: string; name: string }> {
       const node = queue.shift()!;
       const level = nodeToLevelMap.get(node)!;
       visited.add(node);
-      for (const neighbor of graph.get(node) || []) {
-        if (!visited.has(neighbor)) {
-          queue.push(neighbor);
-          nodeToLevelMap.set(neighbor, level + 1);
-        } else if (neighbor !== leafNodeId) {
-          if (!cyclicNodes.has(node)) {
-            cyclicNodes.set(node, { reason: 'cyclic' });
-            logMsg(`Cycle detected at ${node}`);
-          }
-          if (!cyclicNodes.has(neighbor)) {
-            cyclicNodes.set(neighbor, { reason: 'cyclic' });
-            logMsg(`Cycle detected at ${neighbor}`);
+      for (const neighbour of graph.get(node) || []) {
+        if (!visited.has(neighbour)) {
+          queue.push(neighbour);
+          nodeToLevelMap.set(neighbour, level + 1);
+        } else if (neighbour !== leafNodeId) {
+          const { hasCycle, visitedNodeIds } = cycleDetection(graph, node, neighbour);
+          if (hasCycle) {
+            visitedNodeIds.forEach((nodeId) => {
+              cyclicNodes.set(nodeId, { reason: 'cyclic' });
+            });
+            logMsg(`Cycle detected at ${visitedNodeIds}`);
           }
         }
       }
