@@ -4,6 +4,7 @@
   "rules": {
     "prettier/prettier": "error",
     "import/no-duplicates": "error",
+    "no-unused-vars": ["error", { "destructuredArrayIgnorePattern": "^_" }],
     "perfectionist/sort-named-imports": [
       "error",
       {
