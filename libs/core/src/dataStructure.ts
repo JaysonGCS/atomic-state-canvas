@@ -55,6 +55,27 @@ const isLeafNodeAtLastLevel = (
   return counter === 1;
 };
 
+const compressNodeToLevelMap = (
+  nodeToLevelMap: Map<string, number>,
+  graph: Map<string, string[]>,
+  leafNodeId: string
+): Map<string, number> => {
+  const finalNodeToLevelMap = new Map(nodeToLevelMap);
+  const nodeIdsForEvaluation: string[] = Array.from(nodeToLevelMap.keys()).filter(
+    (nodeId) => nodeId !== leafNodeId
+  );
+  nodeIdsForEvaluation.forEach((nodeId) => {
+    const currentNodeLevel = nodeToLevelMap.get(nodeId);
+    const neighbourNodes = graph.get(nodeId);
+    const minLevel = Math.min(...neighbourNodes.map((nodeId) => nodeToLevelMap.get(nodeId)));
+    if (minLevel - currentNodeLevel >= 2) {
+      // If a node is 2 levels or more apart from closest neighbour node, move it to 1 level away
+      finalNodeToLevelMap.set(nodeId, minLevel - 1);
+    }
+  });
+  return finalNodeToLevelMap;
+};
+
 export type TJsonCanvasNode = {
   id: string;
   type: 'text';
@@ -170,10 +191,14 @@ export class Graph<T extends { id: string; name: string }> {
           queue.push(neighbor);
           nodeToLevelMap.set(neighbor, level + 1);
         } else if (neighbor !== leafNodeId) {
-          cyclicNodes.set(node, { reason: 'cyclic' });
-          cyclicNodes.set(neighbor, { reason: 'cyclic' });
-          logMsg(`Cycle detected at ${node}`);
-          logMsg(`Cycle detected at ${neighbor}`);
+          if (!cyclicNodes.has(node)) {
+            cyclicNodes.set(node, { reason: 'cyclic' });
+            logMsg(`Cycle detected at ${node}`);
+          }
+          if (!cyclicNodes.has(neighbor)) {
+            cyclicNodes.set(neighbor, { reason: 'cyclic' });
+            logMsg(`Cycle detected at ${neighbor}`);
+          }
         }
       }
     }
@@ -211,10 +236,12 @@ export class Graph<T extends { id: string; name: string }> {
     // Since we only have 1 leaf node (entry node), make sure it's the only one at the last level
     nodeToLevelMap.set(leafNodeId, isLeafNodeAlreadyLast ? maxLevel : maxLevel + 1);
 
+    const compactNodeToLevelMap = compressNodeToLevelMap(nodeToLevelMap, graph, leafNodeId);
+
     // Group nodes by level
     const levelToNodeIdMap: Map<number, string[]> = new Map();
     for (const node of allNodeIds) {
-      const level = nodeToLevelMap.get(node)!;
+      const level = compactNodeToLevelMap.get(node)!;
       if (!levelToNodeIdMap.has(level)) levelToNodeIdMap.set(level, []);
       levelToNodeIdMap.get(level)!.push(node);
     }
