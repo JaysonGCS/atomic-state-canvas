@@ -5,6 +5,8 @@ import { textSync } from 'figlet';
 import { writeFile } from 'fs/promises';
 import { generateAtomicStateGraph, logMsg, setVerboseLevel } from '@atomic-state-canvas/core';
 
+const SUPPORTED_DIRECTION = ['TB', 'LR'];
+
 program
   .description('A CLI tool for visualizing atomic state relationships using JSON Canvas')
   .option('-v, --verbose', 'Verbose mode')
@@ -12,6 +14,7 @@ program
   .option('-s, --search <value>', 'Search variable name')
   .option('-o, --output <value>', 'Output file name for JSON Canvas')
   .option('-e, --exclude <value>', 'Exclude glob pattern')
+  .option('-d, --direction <value>', 'Supported direction: TB, LR')
   .parse(process.argv);
 
 // When no arguments are provided, display help
@@ -23,6 +26,11 @@ const options = program.opts();
 
 const isVerbose = options.verbose;
 setVerboseLevel(isVerbose);
+
+const direction = options.direction ?? 'TB';
+if (!SUPPORTED_DIRECTION.includes(direction)) {
+  console.error(`Unsupported direction -d ${direction}`);
+}
 
 if (options.file) {
   if (options.search) {
@@ -37,7 +45,8 @@ if (options.file) {
       searchVariableName,
       excludePatternInGlob: options.exclude
     });
-    const jsonCanvas = graph.generateJsonCanvas(entryNodeId);
+    logMsg(`Generating JSON Canvas with direction ${direction}`);
+    const jsonCanvas = graph.generateJsonCanvas(entryNodeId, direction);
     if (options.output) {
       // If output file name is provided, write to file.
       writeFile(options.output, JSON.stringify(jsonCanvas));

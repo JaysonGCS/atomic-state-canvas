@@ -290,25 +290,7 @@ export const generateGraph = (
   }
   const entryNodeId = entryNode.id;
   if (prevNodeId !== null && visitedNodeId.has(entryNodeId)) {
-    if (prevNodeId === entryNodeId) {
-      graph.addNodeMetadata({
-        type: 'self-reference',
-        sourceId: prevNodeId,
-        targetId: entryNodeId
-      });
-      logMsg(`Self reference detected for ${entryNodeId}`);
-      return;
-    }
-    const hasCyclic = graph.hasCycle(entryNodeId, prevNodeId);
-    if (hasCyclic) {
-      graph.addNodeMetadata({
-        type: 'cyclic',
-        sourceId: prevNodeId,
-        targetId: entryNodeId
-      });
-      logMsg(`Cycle detected between ${prevNodeId} and ${entryNodeId}`);
-    }
-    // Terminate here regardless because the entry node has been visited.
+    // Terminate here because the entry node has been visited.
     return;
   }
   visitedNodeId.add(entryNodeId);
