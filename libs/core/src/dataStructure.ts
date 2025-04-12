@@ -40,6 +40,21 @@ const generatePosition = (
   }
 };
 
+const isLeafNodeAtLastLevel = (
+  leafNodeId: string,
+  nodeToLevelMap: Map<string, number>,
+  maxLevel: number
+): boolean => {
+  let counter = 0;
+  const currentLeafLevel = nodeToLevelMap.get(leafNodeId);
+  for (const level of nodeToLevelMap.values()) {
+    if (currentLeafLevel === level && level === maxLevel) {
+      counter += 1;
+    }
+  }
+  return counter === 1;
+};
+
 export type TJsonCanvasNode = {
   id: string;
   type: 'text';
@@ -117,6 +132,13 @@ export class Graph<T extends { id: string; name: string }> {
     const indegreeMap = new Map<string, number>();
     const allNodeIds: string[] = Array.from(this.nodeMap.keys());
     const cyclicNodes = new Map<string, { reason: 'self-reference' | 'cyclic' }>();
+    // Detect self referencing cycle
+    edges.forEach(({ source, target }) => {
+      if (source === target) {
+        cyclicNodes.set(source, { reason: 'self-reference' });
+        logMsg(`Self reference detected for ${source}`);
+      }
+    });
 
     for (const { source, target } of edges) {
       // Generate indegree map
@@ -163,7 +185,7 @@ export class Graph<T extends { id: string; name: string }> {
       unvisitedNodes.forEach((nodeId) => {
         queue.push(nodeId);
         nodeToLevelMap.set(nodeId, 0);
-        if (nodeId !== leafNodeId) {
+        if (nodeId !== leafNodeId && !cyclicNodes.has(nodeId)) {
           cyclicNodes.set(nodeId, { reason: 'cyclic' });
           logMsg(`Cycle detected at ${nodeId}`);
         }
@@ -182,22 +204,9 @@ export class Graph<T extends { id: string; name: string }> {
       }
     }
 
-    // Detect self referencing cycle
-    edges.forEach(({ source, target }) => {
-      if (source === target) {
-        logMsg(`Self reference detected for ${source}`);
-      }
-    });
     const maxLevel = Math.max(...nodeToLevelMap.values());
 
-    let counter = 0;
-    const currentLeafLevel = nodeToLevelMap.get(leafNodeId);
-    for (const level of nodeToLevelMap.values()) {
-      if (currentLeafLevel === level && level === maxLevel) {
-        counter += 1;
-      }
-    }
-    const isLeafNodeAlreadyLast = counter === 1;
+    const isLeafNodeAlreadyLast = isLeafNodeAtLastLevel(leafNodeId, nodeToLevelMap, maxLevel);
 
     // Since we only have 1 leaf node (entry node), make sure it's the only one at the last level
     nodeToLevelMap.set(leafNodeId, isLeafNodeAlreadyLast ? maxLevel : maxLevel + 1);
@@ -210,9 +219,7 @@ export class Graph<T extends { id: string; name: string }> {
       levelToNodeIdMap.get(level)!.push(node);
     }
 
-    // Assign x, y positions (top-to-bottom layout)
     const nodes: TJsonCanvasNode[] = [];
-
     direction;
     for (const [level, nodeIds] of levelToNodeIdMap.entries()) {
       nodeIds.forEach((nodeId, i) => {
