@@ -34,6 +34,7 @@
   "dependencies": {
     "acorn-walk": "^8.3.4",
     "commander": "^13.1.0",
+    "d3-force": "^3.0.0",
     "figlet": "^1.8.0",
     "oxc-parser": "^0.62.0"
   },
@@ -42,6 +43,7 @@
     "@swc-node/register": "~1.10.10",
     "@swc/core": "~1.11.18",
     "@swc/helpers": "~0.5.11",
+    "@types/d3-force": "^3.0.10",
     "@types/figlet": "^1.7.0",
     "@types/node": "^22.14.0",
     "@typescript-eslint/parser": "7.3.0",

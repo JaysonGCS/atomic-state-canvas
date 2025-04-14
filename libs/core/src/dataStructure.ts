@@ -1,12 +1,5 @@
 import { logMsg } from './logUtils';
 
-const DEFAULT_NODE_WIDTH = 300;
-const DEFAULT_NODE_HEIGHT = 150;
-const DEFAULT_LR_X_OFFSET = 2 * DEFAULT_NODE_WIDTH;
-const DEFAULT_LR_Y_OFFSET = 2 * DEFAULT_NODE_HEIGHT;
-const DEFAULT_TB_Y_OFFSET = 250;
-const DEFAULT_TB_X_OFFSET = 450;
-
 /**
  * "1" red
  * "2" orange
@@ -17,36 +10,21 @@ const DEFAULT_TB_X_OFFSET = 450;
  */
 type TCanvasColor = '1' | '2' | '3' | '4' | '5' | '6';
 
-type TEdge = { source: string; target: string };
-
-type TCanvasDirection = 'LR' | 'TB';
-
-const generateEdgeId = (edge: TEdge): string => {
-  return `${edge.source}-${edge.target}`;
-};
-
-const generatePosition = (
-  level: number,
-  index: number,
-  direction: TCanvasDirection
-): { x: number; y: number } => {
-  if (direction === 'TB') {
-    return {
-      x: index * DEFAULT_TB_X_OFFSET,
-      y: level * DEFAULT_TB_Y_OFFSET
-    };
-  } else {
-    return { x: level * DEFAULT_LR_X_OFFSET, y: index * DEFAULT_LR_Y_OFFSET };
-  }
-};
+export type TEdge = { source: string; target: string };
 
 const cycleDetection = (graph: Map<string, string[]>, source: string, target: string) => {
   const neighbours = graph.get(target).slice();
-  const visitedNodeIds = [target];
+  const visitedNodeIds = new Set<string>([target]);
   let hasCycle = false;
   while (neighbours.length) {
     const neighbour = neighbours.shift()!;
-    visitedNodeIds.push(neighbour);
+    if (visitedNodeIds.has(neighbour)) {
+      // This indicates that we found an unintended cycle while trying to find a path from source to target
+      // The flagged nodes here will not be compact because they are found when trying to find a path from source to target
+      hasCycle = true;
+      break;
+    }
+    visitedNodeIds.add(neighbour);
     if (neighbour === source) {
       hasCycle = true;
       break;
@@ -54,7 +32,7 @@ const cycleDetection = (graph: Map<string, string[]>, source: string, target: st
     neighbours.push(...(graph.get(neighbour) ?? []));
   }
   // Return the cycle node id list
-  return { hasCycle, visitedNodeIds };
+  return { hasCycle, visitedNodeIds: Array.from(visitedNodeIds) };
 };
 
 const isLeafNodeAtLastLevel = (
@@ -123,13 +101,26 @@ export class Graph<T extends { id: string; name: string }> {
   private adjacencyList: Map<string, Set<string>>;
   private edgeMap: Map<string, TEdge>;
   private nodeMap: Map<string, T>;
-  private cyclicNodeIdReference: Set<string>;
 
   constructor() {
     this.adjacencyList = new Map();
     this.edgeMap = new Map();
     this.nodeMap = new Map();
-    this.cyclicNodeIdReference = new Set();
+  }
+
+  private getReverseEdgeList = (): TEdge[] => {
+    return Array.from(this.edgeMap).map(([_, { source, target }]) => {
+      return { source: target, target: source };
+    });
+  };
+
+  getInternalData() {
+    return {
+      edgeMap: this.edgeMap,
+      nodeMap: this.nodeMap,
+      adjacencyList: this.adjacencyList,
+      getReverseEdgeList: this.getReverseEdgeList
+    };
   }
 
   addEdge(source: T, target: T): void {
@@ -145,27 +136,7 @@ export class Graph<T extends { id: string; name: string }> {
     this.nodeMap.set(target.id, target);
   }
 
-  addNodeMetadata(param: {
-    type: 'cyclic' | 'self-reference';
-    sourceId: string;
-    targetId: string;
-  }): void {
-    const { type } = param;
-    if (type === 'cyclic' || type === 'self-reference') {
-      const { sourceId, targetId } = param;
-      this.cyclicNodeIdReference.add(sourceId);
-      this.cyclicNodeIdReference.add(targetId);
-    }
-  }
-
-  private getReverseEdgeList = (): TEdge[] => {
-    return Array.from(this.edgeMap).map(([_, { source, target }]) => {
-      return { source: target, target: source };
-    });
-  };
-
-  generateJsonCanvas(leafNodeId: string, direction: 'TB' | 'LR'): TJSonCanvas {
-    const edges: TEdge[] = this.getReverseEdgeList();
+  generateLevelTopologyMapAndMetadata(leafNodeId: string, edges: TEdge[]) {
     const graph = new Map<string, string[]>();
     const indegreeMap = new Map<string, number>();
     const allNodeIds: string[] = Array.from(this.nodeMap.keys());
@@ -248,9 +219,10 @@ export class Graph<T extends { id: string; name: string }> {
     const maxLevel = Math.max(...nodeToLevelMap.values());
 
     const isLeafNodeAlreadyLast = isLeafNodeAtLastLevel(leafNodeId, nodeToLevelMap, maxLevel);
+    const leafNodeLevel = isLeafNodeAlreadyLast ? maxLevel : maxLevel + 1;
 
     // Since we only have 1 leaf node (entry node), make sure it's the only one at the last level
-    nodeToLevelMap.set(leafNodeId, isLeafNodeAlreadyLast ? maxLevel : maxLevel + 1);
+    nodeToLevelMap.set(leafNodeId, leafNodeLevel);
 
     const compactNodeToLevelMap = compressNodeToLevelMap(nodeToLevelMap, graph, leafNodeId);
 
@@ -262,31 +234,10 @@ export class Graph<T extends { id: string; name: string }> {
       levelToNodeIdMap.get(level)!.push(node);
     }
 
-    const nodes: TJsonCanvasNode[] = [];
-    direction;
-    for (const [level, nodeIds] of levelToNodeIdMap.entries()) {
-      nodeIds.forEach((nodeId, i) => {
-        nodes.push({
-          id: nodeId,
-          type: 'text',
-          text: this.nodeMap.get(nodeId).name,
-          width: DEFAULT_NODE_WIDTH,
-          height: DEFAULT_NODE_HEIGHT,
-          color: cyclicNodes.has(nodeId) ? '1' : '4',
-          ...generatePosition(level, i, direction)
-        });
-      });
-    }
     return {
-      nodes,
-      edges: edges.map((edge) => {
-        return {
-          id: generateEdgeId(edge),
-          fromNode: edge.source,
-          toNode: edge.target,
-          color: cyclicNodes.has(edge.target) && cyclicNodes.has(edge.source) ? '3' : '5'
-        };
-      })
+      levelToNodeIdMap,
+      cyclicNodes,
+      leafNodeLevel
     };
   }
 }

@@ -15,3 +15,5 @@ export type TPluginConfig = {
     astNode: VariableDeclaration | ExportNamedDeclaration
   ) => TSimpleNode | undefined;
 };
+
+export type TCanvasDirection = 'LR' | 'TB';
