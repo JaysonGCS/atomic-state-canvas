@@ -3,7 +3,12 @@
 import { program } from 'commander';
 import { textSync } from 'figlet';
 import { writeFile } from 'fs/promises';
-import { generateAtomicStateGraph, logMsg, setVerboseLevel } from '@atomic-state-canvas/core';
+import {
+  generateAtomicStateGraph,
+  generateGraphLayout,
+  logMsg,
+  setVerboseLevel
+} from '@atomic-state-canvas/core';
 
 const SUPPORTED_DIRECTION = ['TB', 'LR'];
 
@@ -15,6 +20,7 @@ program
   .option('-o, --output <value>', 'Output file name for JSON Canvas')
   .option('-e, --exclude <value>', 'Exclude glob pattern')
   .option('-d, --direction <value>', 'Supported direction: TB, LR')
+  .option('-l, --layout <value>', 'Supported direction: SIMPLE_TOPOLOGY, FORCE_DIRECTED')
   .parse(process.argv);
 
 // When no arguments are provided, display help
@@ -45,8 +51,12 @@ if (options.file) {
       searchVariableName,
       excludePatternInGlob: options.exclude
     });
-    logMsg(`Generating JSON Canvas with direction ${direction}`);
-    const jsonCanvas = graph.generateJsonCanvas(entryNodeId, direction);
+    const jsonCanvas = generateGraphLayout({
+      type: options.layout,
+      graph,
+      leafNodeId: entryNodeId,
+      options: { direction }
+    });
     if (options.output) {
       // If output file name is provided, write to file.
       writeFile(options.output, JSON.stringify(jsonCanvas));
