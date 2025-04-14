@@ -14,21 +14,25 @@ export type TEdge = { source: string; target: string };
 
 const cycleDetection = (graph: Map<string, string[]>, source: string, target: string) => {
   const neighbours = graph.get(target).slice();
-  const visitedNodeIds = [target];
+  const visitedNodeIds = new Set<string>([target]);
   let hasCycle = false;
   while (neighbours.length) {
     const neighbour = neighbours.shift()!;
-    // console.log({ source, target }, graph, neighbour, graph.get(neighbour));
-    visitedNodeIds.push(neighbour);
+    if (visitedNodeIds.has(neighbour)) {
+      // This indicates that we found an unintended cycle while trying to find a path from source to target
+      // The flagged nodes here will not be compact because they are found when trying to find a path from source to target
+      hasCycle = true;
+      break;
+    }
+    visitedNodeIds.add(neighbour);
     if (neighbour === source) {
       hasCycle = true;
       break;
     }
-
     neighbours.push(...(graph.get(neighbour) ?? []));
   }
   // Return the cycle node id list
-  return { hasCycle, visitedNodeIds };
+  return { hasCycle, visitedNodeIds: Array.from(visitedNodeIds) };
 };
 
 const isLeafNodeAtLastLevel = (
