@@ -9,7 +9,7 @@ export const rootSelector = selector<string>({
 
 export const sideSelector = selector<string>({
   key: '_sideSelector',
-  get: ({ get }) => {
+  get: () => {
     return '';
   }
 });
