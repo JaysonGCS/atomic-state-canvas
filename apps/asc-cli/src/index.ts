@@ -4,6 +4,7 @@ import { program } from 'commander';
 import { textSync } from 'figlet';
 import { writeFile } from 'fs/promises';
 import {
+  findAllCycles,
   generateAtomicStateGraph,
   generateGraphLayout,
   logMsg,
@@ -51,10 +52,13 @@ if (options.file) {
       searchVariableName,
       excludePatternInGlob: options.exclude
     });
+    const { getReverseEdgeList } = graph.getInternalData();
+    const { allCycles } = findAllCycles(getReverseEdgeList());
     const jsonCanvas = generateGraphLayout({
       type: options.layout,
       graph,
       leafNodeId: entryNodeId,
+      allCycles,
       options: { direction }
     });
     if (options.output) {

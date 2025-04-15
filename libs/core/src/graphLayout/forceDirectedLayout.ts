@@ -93,13 +93,16 @@ const convertEdgeMapToD3ForceLinks = (edgeMap: Map<string, TEdge>): ID3ForceLink
 export const generateForceGraphLayout = (
   graph: Graph<TSimpleNode>,
   leafNodeId: string,
+  cyclicNodes: Map<string, { reason: 'self-reference' | 'cyclic' }>,
   options?: { simulationCycle?: number; direction?: TCanvasDirection }
 ): TJSonCanvas => {
   const { simulationCycle = 300, direction = 'TB' } = options || {};
   const { edgeMap, nodeMap, getReverseEdgeList } = graph.getInternalData();
   const edges = getReverseEdgeList();
-  const { levelToNodeIdMap, leafNodeLevel, cyclicNodes } =
-    graph.generateLevelTopologyMapAndMetadata(leafNodeId, edges);
+  const { levelToNodeIdMap, leafNodeLevel } = graph.generateLevelTopologyMapAndMetadata(
+    leafNodeId,
+    edges
+  );
   const nodes = convertNodeMapToD3ForceNodes(
     levelToNodeIdMap,
     leafNodeLevel,
