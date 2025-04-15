@@ -1,5 +1,3 @@
-import { logMsg } from './logUtils';
-
 /**
  * "1" red
  * "2" orange
@@ -11,29 +9,6 @@ import { logMsg } from './logUtils';
 type TCanvasColor = '1' | '2' | '3' | '4' | '5' | '6';
 
 export type TEdge = { source: string; target: string };
-
-const cycleDetection = (graph: Map<string, string[]>, source: string, target: string) => {
-  const neighbours = graph.get(target).slice();
-  const visitedNodeIds = new Set<string>([target]);
-  let hasCycle = false;
-  while (neighbours.length) {
-    const neighbour = neighbours.shift()!;
-    if (visitedNodeIds.has(neighbour)) {
-      // This indicates that we found an unintended cycle while trying to find a path from source to target
-      // The flagged nodes here will not be compact because they are found when trying to find a path from source to target
-      hasCycle = true;
-      break;
-    }
-    visitedNodeIds.add(neighbour);
-    if (neighbour === source) {
-      hasCycle = true;
-      break;
-    }
-    neighbours.push(...(graph.get(neighbour) ?? []));
-  }
-  // Return the cycle node id list
-  return { hasCycle, visitedNodeIds: Array.from(visitedNodeIds) };
-};
 
 const isLeafNodeAtLastLevel = (
   leafNodeId: string,
@@ -140,14 +115,6 @@ export class Graph<T extends { id: string; name: string }> {
     const graph = new Map<string, string[]>();
     const indegreeMap = new Map<string, number>();
     const allNodeIds: string[] = Array.from(this.nodeMap.keys());
-    const cyclicNodes = new Map<string, { reason: 'self-reference' | 'cyclic' }>();
-    // Detect self referencing cycle
-    edges.forEach(({ source, target }) => {
-      if (source === target) {
-        cyclicNodes.set(source, { reason: 'self-reference' });
-        logMsg(`Self reference detected for ${source}`);
-      }
-    });
 
     for (const { source, target } of edges) {
       // Generate indegree map
@@ -178,14 +145,6 @@ export class Graph<T extends { id: string; name: string }> {
         if (!visited.has(neighbour)) {
           queue.push(neighbour);
           nodeToLevelMap.set(neighbour, level + 1);
-        } else if (neighbour !== leafNodeId) {
-          const { hasCycle, visitedNodeIds } = cycleDetection(graph, node, neighbour);
-          if (hasCycle) {
-            visitedNodeIds.forEach((nodeId) => {
-              cyclicNodes.set(nodeId, { reason: 'cyclic' });
-            });
-            logMsg(`Cycle detected at ${visitedNodeIds}`);
-          }
         }
       }
     }
@@ -197,10 +156,6 @@ export class Graph<T extends { id: string; name: string }> {
       unvisitedNodes.forEach((nodeId) => {
         queue.push(nodeId);
         nodeToLevelMap.set(nodeId, 0);
-        if (nodeId !== leafNodeId && !cyclicNodes.has(nodeId)) {
-          cyclicNodes.set(nodeId, { reason: 'cyclic' });
-          logMsg(`Cycle detected at ${nodeId}`);
-        }
       });
       const visited = new Set();
       while (queue.length) {
@@ -236,7 +191,6 @@ export class Graph<T extends { id: string; name: string }> {
 
     return {
       levelToNodeIdMap,
-      cyclicNodes,
       leafNodeLevel
     };
   }

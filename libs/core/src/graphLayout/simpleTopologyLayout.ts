@@ -26,15 +26,13 @@ const generatePosition = (
 export const generateSimpleTopolofyGraphLayout = (
   graph: Graph<TSimpleNode>,
   leafNodeId: string,
+  cyclicNodes: Map<string, { reason: 'self-reference' | 'cyclic' }>,
   options?: { direction?: TCanvasDirection }
 ): TJSonCanvas => {
   const { direction = 'TB' } = options || {};
   const { nodeMap, getReverseEdgeList } = graph.getInternalData();
   const edges = getReverseEdgeList();
-  const { levelToNodeIdMap, cyclicNodes } = graph.generateLevelTopologyMapAndMetadata(
-    leafNodeId,
-    edges
-  );
+  const { levelToNodeIdMap } = graph.generateLevelTopologyMapAndMetadata(leafNodeId, edges);
   const nodes: TJsonCanvasNode[] = [];
   for (const [level, nodeIds] of levelToNodeIdMap.entries()) {
     nodeIds.forEach((nodeId, i) => {
