@@ -53,21 +53,27 @@ if (options.file) {
       excludePatternInGlob: options.exclude
     });
     const { getReverseEdgeList } = graph.getInternalData();
-    const { allCycles } = findAllCycles(getReverseEdgeList());
+    const { allCycles, cyclicDetailsMap, cyclicStatsMap } = findAllCycles(getReverseEdgeList());
     const jsonCanvas = generateGraphLayout({
       type: options.layout,
       graph,
       leafNodeId: entryNodeId,
-      allCycles,
+      cyclicDetailsMap,
       options: { direction }
     });
     if (options.output) {
       // If output file name is provided, write to file.
       writeFile(options.output, JSON.stringify(jsonCanvas));
+      logMsg(`Output to file: ${options.output}`);
     } else {
       logMsg(JSON.stringify(jsonCanvas, null, 2));
     }
-    logMsg('Success');
+    // eslint-disable-next-line no-console
+    console.table({
+      'Self Reference Cycles': { Stats: cyclicStatsMap.get('self-reference').length },
+      'Cyclic Cycles': { Stats: cyclicStatsMap.get('cyclic').length },
+      'Total Cycles': { Stats: allCycles.length }
+    });
   } else {
     console.error('Missing search variable name. Please provide it via -s <variable_name>');
   }

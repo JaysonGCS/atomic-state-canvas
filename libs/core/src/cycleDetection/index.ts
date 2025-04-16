@@ -1,4 +1,33 @@
 import { TEdge } from '../dataStructure';
+import { TCyclicDetails } from '../types';
+
+const generateCyclicDetailsMap = (allCycles: string[][]): Map<string, TCyclicDetails> => {
+  const cyclicNodes = new Map<string, TCyclicDetails>();
+  allCycles.forEach((cycle) => {
+    if (cycle.length === 1) {
+      cyclicNodes.set(cycle[0], { reason: 'self-reference' });
+    } else {
+      cycle.forEach((nodeId) => {
+        cyclicNodes.set(nodeId, { reason: 'cyclic' });
+      });
+    }
+  });
+  return cyclicNodes;
+};
+
+const generateCyclicStats = (allCycles: string[][]): Map<TCyclicDetails['reason'], string[][]> => {
+  const cyclicStatsMap = new Map<TCyclicDetails['reason'], string[][]>();
+  cyclicStatsMap.set('cyclic', []);
+  cyclicStatsMap.set('self-reference', []);
+  allCycles.forEach((cycle) => {
+    if (cycle.length === 1) {
+      cyclicStatsMap.get('self-reference').push(cycle);
+    } else {
+      cyclicStatsMap.get('cyclic').push(cycle);
+    }
+  });
+  return cyclicStatsMap;
+};
 
 const constructGraph = (edges: TEdge[]) => {
   const graph = new Map<string, string[]>();
@@ -44,5 +73,7 @@ export const findAllCycles = (edges: TEdge[]) => {
   for (const node of graph.keys()) {
     dfs(node);
   }
-  return { allCycles };
+  const cyclicDetailsMap = generateCyclicDetailsMap(allCycles);
+  const cyclicStatsMap = generateCyclicStats(allCycles);
+  return { allCycles, cyclicDetailsMap, cyclicStatsMap };
 };
