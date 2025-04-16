@@ -17,3 +17,5 @@ export type TPluginConfig = {
 };
 
 export type TCanvasDirection = 'LR' | 'TB';
+
+export type TCyclicDetails = { reason: 'self-reference' | 'cyclic' };

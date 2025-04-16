@@ -1,5 +1,5 @@
 import { Graph, TEdge, TJSonCanvas, TJsonCanvasNode } from '../dataStructure';
-import { TCanvasDirection, TSimpleNode } from '../types';
+import { TCanvasDirection, TCyclicDetails, TSimpleNode } from '../types';
 import {
   SimulationLinkDatum,
   SimulationNodeDatum,
@@ -93,7 +93,7 @@ const convertEdgeMapToD3ForceLinks = (edgeMap: Map<string, TEdge>): ID3ForceLink
 export const generateForceGraphLayout = (
   graph: Graph<TSimpleNode>,
   leafNodeId: string,
-  cyclicNodes: Map<string, { reason: 'self-reference' | 'cyclic' }>,
+  cyclicDetailsMap: Map<string, TCyclicDetails>,
   options?: { simulationCycle?: number; direction?: TCanvasDirection }
 ): TJSonCanvas => {
   const { simulationCycle = 300, direction = 'TB' } = options || {};
@@ -131,13 +131,13 @@ export const generateForceGraphLayout = (
     simulation.tick();
   }
   return {
-    nodes: convertID3ForceNodesToTJSonCanvasNodes(nodes, nodeMap, cyclicNodes),
+    nodes: convertID3ForceNodesToTJSonCanvasNodes(nodes, nodeMap, cyclicDetailsMap),
     edges: edges.map((edge) => {
       return {
         id: generateEdgeId(edge),
         fromNode: edge.source,
         toNode: edge.target,
-        color: cyclicNodes.has(edge.target) && cyclicNodes.has(edge.source) ? '3' : '5'
+        color: cyclicDetailsMap.has(edge.target) && cyclicDetailsMap.has(edge.source) ? '3' : '5'
       };
     })
   };
