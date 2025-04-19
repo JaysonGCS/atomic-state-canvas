@@ -4,3 +4,4 @@ export * from './core';
 export * from './graphLayout';
 export * from './cycleDetection';
 export * from './generalUtils';
+export * from './types';

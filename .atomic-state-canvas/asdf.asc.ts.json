@@ -1,0 +1,21 @@
+{
+  "ascFilePath": "examples/standard/src/store9/asdf.asc.ts",
+  "timestamp": 1745087880380,
+  "ascObject": {
+    "title": "Title",
+    "entry": "entrySelector",
+    "plugin": "recoil"
+  },
+  "entryNodeId": "_entrySelector",
+  "pathName": "examples/standard/src/store9/entrySelector.ts",
+  "reverseEdges": [
+    {
+      "source": "_entrySelector",
+      "target": "_oneSelector"
+    },
+    {
+      "source": "_entrySelector",
+      "target": "_aSelector"
+    }
+  ]
+}

@@ -2,7 +2,19 @@ import { Graph } from './dataStructure';
 import { globToRegex } from './generalUtils';
 import { generateGraph, getEntryNode, getFileDetails } from './graphUtils';
 import { config } from './plugins/recoil';
-import { TSimpleNode } from './types';
+import { TOptions, TSimpleNode } from './types';
+
+export const getFileDetailsGivenFramework = (
+  pathName: string,
+  framework: string,
+  options: TOptions,
+  readOptions?: { skipImport?: boolean }
+) => {
+  if (framework === 'recoil') {
+    return getFileDetails(pathName, config, options, readOptions);
+  }
+  throw new Error(`Unsupported framework: ${framework}`);
+};
 
 export const generateAtomicStateGraph = (
   pathName: string,

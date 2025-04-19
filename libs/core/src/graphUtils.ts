@@ -4,22 +4,11 @@ import { ImportDeclaration, ParseResult, parseSync } from 'oxc-parser';
 import path from 'path';
 import { Graph } from './dataStructure';
 import { getExtension } from './fileUtils';
-import { TOptions, TPluginConfig, TSimpleNode } from './types';
+import { TFileDetails, TImportDetails, TOptions, TPluginConfig, TSimpleNode } from './types';
 import { cliConfig } from './configUtils';
 import { logMsg } from './logUtils';
 
 const ALLOWED_EXTENSIONS = ['ts', 'js', 'tsx', 'jsx'];
-
-type TImportDetails = {
-  importVariables: string[];
-  pathName: string;
-  importType: 'file' | 'alias';
-};
-
-type TFileDetails = {
-  importDetailsList: TImportDetails[];
-  presentNodes: TSimpleNode[];
-};
 
 const readStateFile = (pathName: string): string => {
   try {

@@ -19,3 +19,14 @@ export type TPluginConfig = {
 export type TCanvasDirection = 'LR' | 'TB';
 
 export type TCyclicDetails = { reason: 'self-reference' | 'cyclic' };
+
+export type TImportDetails = {
+  importVariables: string[];
+  pathName: string;
+  importType: 'file' | 'alias';
+};
+
+export type TFileDetails = {
+  importDetailsList: TImportDetails[];
+  presentNodes: TSimpleNode[];
+};

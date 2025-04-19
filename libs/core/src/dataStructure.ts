@@ -84,9 +84,13 @@ export class Graph<T extends { id: string; name: string }> {
   }
 
   private getReverseEdgeList = (): TEdge[] => {
-    return Array.from(this.edgeMap).map(([_, { source, target }]) => {
+    return Array.from(this.edgeMap.values()).map(({ source, target }) => {
       return { source: target, target: source };
     });
+  };
+
+  private getEdgeList = (): TEdge[] => {
+    return Array.from(this.edgeMap.values());
   };
 
   getInternalData() {
@@ -94,7 +98,8 @@ export class Graph<T extends { id: string; name: string }> {
       edgeMap: this.edgeMap,
       nodeMap: this.nodeMap,
       adjacencyList: this.adjacencyList,
-      getReverseEdgeList: this.getReverseEdgeList
+      getReverseEdgeList: this.getReverseEdgeList,
+      getEdgeList: this.getEdgeList
     };
   }
 
