@@ -1,17 +1,10 @@
-import {
-  getFileDetailsGivenFramework,
-  logMsg,
-  TFileDetails,
-  TSimpleNode
-} from '@atomic-state-canvas/core';
+import { getFileDetailsGivenFramework, TFileDetails, TSimpleNode } from '@atomic-state-canvas/core';
 import { Expression, Property, SpreadElement } from 'acorn';
 import { simple } from 'acorn-walk';
-import { readdirSync } from 'fs';
+import { promises as fs, readdirSync } from 'fs';
 import { ParseResult, parseSync } from 'oxc-parser';
 import path from 'path';
-import { IAscConfig, IAscObject } from './types';
-import { promises as fs } from 'fs';
-import { CosmiconfigResult, PublicExplorer } from 'cosmiconfig';
+import { IAscObject } from './types';
 
 export function astObjectToJSObject<T = unknown>(properties: (Property | SpreadElement)[]): T {
   const result: Record<string, unknown> = {};
@@ -114,21 +107,4 @@ export const findAscEntryDetails = async (ascConfigFilePath: string) => {
     pathName: actualAbsolutePath,
     ascObject: defaultAscObject
   };
-};
-
-export const loadConfig = async (explorer: PublicExplorer): Promise<IAscConfig> => {
-  try {
-    const result: CosmiconfigResult = await explorer.search();
-    if (result) {
-      logMsg(`Loaded config from: ${result.filepath}`);
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-      return result.config;
-    } else {
-      logMsg('No config found, using defaults.');
-      return {};
-    }
-  } catch (err) {
-    console.error('Error loading config:', err);
-    return {};
-  }
 };

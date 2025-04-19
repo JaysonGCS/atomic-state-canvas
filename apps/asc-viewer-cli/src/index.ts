@@ -1,53 +1,22 @@
 #!/usr/bin/env node
-import { generateAtomicStateGraph, logMsg } from '@atomic-state-canvas/core';
+import { logMsg } from '@atomic-state-canvas/core';
 import chokidar from 'chokidar';
-import { promises as fs } from 'fs';
+import { cosmiconfig } from 'cosmiconfig';
 import path from 'path';
 import { createServer } from 'vite';
-import { findAscEntryDetails, loadConfig } from './utils';
-import { cosmiconfig } from 'cosmiconfig';
+import {
+  DEFAULT_EXTENSIONS,
+  DEFAULT_METADATA_DIR_NAME,
+  DEFAULT_PORT,
+  DEFAULT_WATCH_DIR
+} from './constants';
 import { IAscConfig } from './types';
+import { loadConfig } from './configUtils';
+import { generateMetadata } from './metadataUtils';
 
 const explorer = cosmiconfig('asc');
 
 const isDev = process.argv.includes('--dev');
-const DEFAULT_PORT = 1296;
-const DEFAULT_WATCH_DIR = path.resolve(process.cwd(), 'src');
-const DEFAULT_EXTENSIONS = ['.asc.js', '.asc.ts'];
-
-const OUT_DIR = path.resolve(process.cwd(), '.atomic-state-canvas');
-
-async function generateMetadata(ascFilePath: string) {
-  try {
-    const { pathName, ascObject } = await findAscEntryDetails(ascFilePath);
-    if (pathName !== undefined && ascObject !== undefined) {
-      // @ts-expect-error -- Ignore type error for now
-      const { graph, entryNodeId } = generateAtomicStateGraph(pathName, ascObject.plugin, {
-        searchVariableName: ascObject.entry as string,
-        excludePatternInGlob: undefined
-      });
-      const { getEdgeList } = graph.getInternalData();
-      const reverseEdges = getEdgeList();
-
-      const metadata = {
-        ascFilePath,
-        timestamp: Date.now(),
-        ascObject,
-        entryNodeId,
-        pathName,
-        reverseEdges: reverseEdges
-      };
-      const outPath = path.join(OUT_DIR, path.basename(ascFilePath) + '.json');
-      await fs.mkdir(OUT_DIR, { recursive: true });
-      await fs.writeFile(outPath, JSON.stringify(metadata, null, 2), 'utf-8');
-      logMsg(`Generated metadata: ${outPath}`);
-    } else {
-      console.error(`Unable to generate metadata for ${ascFilePath}`);
-    }
-  } catch (error) {
-    console.error(`Error generating metadata for ${ascFilePath}: ${error}`);
-  }
-}
 
 const watchAndGenerateMetadata = (params: { watchDir: string; extensions: string[] }) => {
   const { watchDir, extensions } = params;
@@ -55,7 +24,7 @@ const watchAndGenerateMetadata = (params: { watchDir: string; extensions: string
   // TODO: Implement metadata generation logic
   const watcher = chokidar.watch(watchDir, {
     ignored: (path, stats) => {
-      if (path.includes('.atomic-state-canvas')) {
+      if (path.includes(DEFAULT_METADATA_DIR_NAME)) {
         return true;
       }
       return stats?.isFile() && !extensions.some((ext) => path.endsWith(ext));
@@ -69,7 +38,7 @@ async function main() {
   const config: IAscConfig = await loadConfig(explorer);
   const {
     port = DEFAULT_PORT,
-    watchDir = DEFAULT_WATCH_DIR,
+    watchDir = path.resolve(process.cwd(), DEFAULT_WATCH_DIR),
     extensions = DEFAULT_EXTENSIONS
   } = config;
   watchAndGenerateMetadata({ watchDir, extensions });
