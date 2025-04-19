@@ -3,10 +3,10 @@
     "declaration": true,
     "declarationMap": true,
     "target": "es6",
-    "module": "commonjs",
+    "module": "es2022",
     "sourceMap": true,
     "esModuleInterop": true,
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
     "baseUrl": ".",
     "outDir": "dist",
     "paths": {
