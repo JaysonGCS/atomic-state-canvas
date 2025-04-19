@@ -35,7 +35,7 @@ const constructGraph = (edges: TEdge[]) => {
     if (!graph.has(source)) {
       graph.set(source, []);
     }
-    graph.get(source)!.push(target);
+    graph.get(source).push(target);
   }
   return graph;
 };

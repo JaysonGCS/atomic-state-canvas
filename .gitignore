@@ -1,5 +1,6 @@
 *.canvas
 aliasReplacer.js
+tmp/
 
 .DS_store
 */.DS_store
@@ -172,3 +173,6 @@ dist
 
 .nx/cache
 .nx/workspace-data
+
+vite.config.*.timestamp*
+vitest.config.*.timestamp*

@@ -1,0 +1,16 @@
+{
+  "name": "asc-viewer",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "apps/asc-viewer/src",
+  "projectType": "application",
+  "tags": [],
+  "// targets": "to see all targets run: nx show project asc-viewer --web",
+  "targets": {
+    "build": {
+      "executor": "@nx/vite:build",
+      "options": {
+        "outputPath": "dist/apps/asc-viewer"
+      }
+    }
+  }
+}

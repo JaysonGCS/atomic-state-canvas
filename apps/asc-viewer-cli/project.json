@@ -1,0 +1,48 @@
+{
+  "name": "asc-viewer-cli",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "apps/asc-viewer-cli/src",
+  "projectType": "application",
+  "tags": [],
+  "targets": {
+    "build": {
+      "executor": "@nx/esbuild:esbuild",
+      "outputs": ["{options.outputPath}"],
+      "defaultConfiguration": "production",
+      "options": {
+        "platform": "node",
+        "outputPath": "dist/asc-viewer-cli",
+        "format": ["cjs"],
+        "bundle": true,
+        "main": "apps/asc-viewer-cli/src/index.ts",
+        "tsConfig": "apps/asc-viewer-cli/tsconfig.app.json",
+        "assets": ["apps/asc-viewer-cli/src/assets", "LICENSE"],
+        "generatePackageJson": true,
+        "esbuildOptions": {
+          "sourcemap": true,
+          "outExtension": {
+            ".js": ".js"
+          }
+        }
+      },
+      "configurations": {
+        "development": {},
+        "production": {
+          "esbuildOptions": {
+            "sourcemap": false,
+            "outExtension": {
+              ".js": ".js"
+            }
+          }
+        }
+      }
+    },
+    "dev": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "tsx apps/asc-viewer-cli/src/index.ts --dev",
+        "cwd": "."
+      }
+    }
+  }
+}

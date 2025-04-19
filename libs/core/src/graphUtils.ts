@@ -60,7 +60,7 @@ const getActualPathFromIndexFile = (
         const directory = path.dirname(indexFilePath);
         const rawFileNames = fs.readdirSync(directory);
         const fileNames = options.excludePattern
-          ? rawFileNames.filter((fileName) => !options.excludePattern!.test(fileName))
+          ? rawFileNames.filter((fileName) => !options.excludePattern.test(fileName))
           : rawFileNames;
         // There could be multiple files with the same name but different extensions
         const actualFilesWithExt: string[] = fileNames.filter(
@@ -107,12 +107,15 @@ const getIndexFileFromRelativePath = (
       return undefined;
     }
   } catch (err) {
+    if (cliConfig.verbose) {
+      logMsg(String(err), true);
+    }
     // When the file does not exist, lstatSync will throw an error.
     return undefined;
   }
   const rawFileNames = fs.readdirSync(fullPath);
   const fileNames = options.excludePattern
-    ? rawFileNames.filter((fileName) => !options.excludePattern!.test(fileName))
+    ? rawFileNames.filter((fileName) => !options.excludePattern.test(fileName))
     : rawFileNames;
   const indexFileWithExt = fileNames.find((fileName) => fileName.startsWith('index.'));
   return indexFileWithExt ? path.join(fullPath, indexFileWithExt) : undefined;
@@ -190,7 +193,7 @@ const convertImportDeclarationToImportDetails = (
   const directory = path.dirname(fullFilePathWithoutExt);
   const rawFileNames = fs.readdirSync(directory);
   const fileNames = options.excludePattern
-    ? rawFileNames.filter((fileName) => !options.excludePattern!.test(fileName))
+    ? rawFileNames.filter((fileName) => !options.excludePattern.test(fileName))
     : rawFileNames;
   const parts = importFromPath.split(path.sep);
   const fileNameReferenceWithoutExtension = parts[parts.length - 1];
@@ -246,7 +249,9 @@ const getFileDetailsFromImportDetails = (
   options: TOptions
 ): TFileDetails => {
   const { pathName } = importDetails;
-  cliConfig.verbose && logMsg(`Reading file from import: ${pathName}`, true);
+  if (cliConfig.verbose) {
+    logMsg(`Reading file from import: ${pathName}`, true);
+  }
   if (importDetails?.importType === 'alias') {
     // TODO: Implement alias import support
     logMsg(
@@ -320,12 +325,15 @@ export const generateGraph = (
       }
     }
     if (dependencyNode && fileDetailForDependency) {
-      cliConfig.verbose &&
+      if (cliConfig.verbose) {
         logMsg(`Adding edge from ${entryNode.name} to ${dependencyNode.name}`, true);
+      }
       graph.addEdge(entryNode, dependencyNode);
       // Here we need to check if dependencyNode has dependencies as well. If it has dependencies, we need to recursively generate the graph for those dependencies as well.
       if (dependencyNode.dependencies.length !== 0) {
-        cliConfig.verbose && logMsg(`Generating graph for ${dependencyNode.name}`, true);
+        if (cliConfig.verbose) {
+          logMsg(`Generating graph for ${dependencyNode.name}`, true);
+        }
         // This step traverse to the next level to repeat the step for the dependent node
         generateGraph(
           fileDetailForDependency,

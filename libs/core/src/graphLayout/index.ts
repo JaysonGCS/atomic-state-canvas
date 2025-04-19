@@ -23,5 +23,6 @@ export const generateGraphLayout = (props: TLayoutProps) => {
   } else if (type === 'SIMPLE_TOPOLOGY') {
     return generateSimpleTopolofyGraphLayout(graph, leafNodeId, cyclicDetailsMap, options);
   }
+  // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
   throw new Error(`Unsupported layout type: ${type}`);
 };
