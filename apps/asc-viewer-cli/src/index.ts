@@ -21,7 +21,6 @@ const isDev = process.argv.includes('--dev');
 const watchAndGenerateMetadata = (params: { watchDir: string; extensions: string[] }) => {
   const { watchDir, extensions } = params;
   logMsg(`Setting up file watcher on ${watchDir}`);
-  // TODO: Implement metadata generation logic
   const watcher = chokidar.watch(watchDir, {
     ignored: (path, stats) => {
       if (path.includes(DEFAULT_METADATA_DIR_NAME)) {
