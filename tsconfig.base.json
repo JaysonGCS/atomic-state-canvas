@@ -3,7 +3,7 @@
     "declaration": true,
     "declarationMap": true,
     "target": "es6",
-    "module": "es2022",
+    "module": "esnext",
     "sourceMap": true,
     "esModuleInterop": true,
     "moduleResolution": "bundler",
