@@ -5,6 +5,7 @@ import { promises as fs, readdirSync } from 'fs';
 import { ParseResult, parseSync } from 'oxc-parser';
 import path from 'path';
 import { IAscObject } from './types';
+import crypto from 'crypto';
 
 export function astObjectToJSObject<T = unknown>(properties: (Property | SpreadElement)[]): T {
   const result: Record<string, unknown> = {};
@@ -145,4 +146,8 @@ export const findAscEntryDetails = async (
 
 export const generateId = (ascObject: IAscObject, entryNodeId: string): string => {
   return `${ascObject.title}-${entryNodeId}-${ascObject.plugin}`;
+};
+
+export const generateHash = (text: string): string => {
+  return crypto.createHash('sha1').update(text).digest('hex');
 };

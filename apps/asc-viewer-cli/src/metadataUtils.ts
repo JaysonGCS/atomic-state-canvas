@@ -1,6 +1,6 @@
 import { generateAtomicStateGraph, logMsg } from '@atomic-state-canvas/core';
 import path from 'path';
-import { findAscEntryDetails, generateId } from './utils';
+import { findAscEntryDetails, generateHash, generateId } from './utils';
 import { promises as fs } from 'fs';
 import { DEFAULT_METADATA_DIR_NAME } from './constants';
 import { IAscEntry, IAscMetadata } from './types';
@@ -36,7 +36,7 @@ export async function generateMetadata(ascFilePath: string) {
       ascFilePath,
       entries
     };
-    const outPath = path.join(OUT_DIR, path.basename(ascFilePath) + '.json');
+    const outPath = path.join(OUT_DIR, `${generateHash(ascFilePath)}.json`);
     await fs.mkdir(OUT_DIR, { recursive: true });
     await fs.writeFile(outPath, JSON.stringify(metadata, null, 2), 'utf-8');
     logMsg(`Generated metadata: ${outPath}`);
