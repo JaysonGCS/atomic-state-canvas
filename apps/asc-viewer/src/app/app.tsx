@@ -4,6 +4,7 @@ import { ascHierarchyAtom } from '../stores/ascStore/ascStore';
 import { useAtomValue } from 'jotai';
 import { loadable } from 'jotai/utils';
 import { THierarchyItem } from '../stores/ascStore/types';
+import { Button } from '@atomic-state-canvas/components/ui/button';
 
 const loadableAscHierarchyAtom = loadable<Promise<THierarchyItem>>(ascHierarchyAtom);
 
@@ -18,6 +19,7 @@ export function App() {
 
   return (
     <div>
+      <Button>Button</Button>
       <NxWelcome title="asc-viewer" />
     </div>
   );
