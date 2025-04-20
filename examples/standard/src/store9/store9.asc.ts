@@ -1,7 +1,7 @@
 import { entrySelector, fourSelector } from './entrySelector';
 
 export const metadataSelector = {
-  title: 'Title 1',
+  title: 'Group/Title 1',
   entry: entrySelector,
   plugin: 'recoil'
 };

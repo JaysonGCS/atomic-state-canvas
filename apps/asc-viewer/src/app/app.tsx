@@ -1,14 +1,14 @@
 import { useEffect } from 'react';
 import NxWelcome from './nx-welcome';
-import { ascStoreAsyncAtom } from '../stores/ascStore';
+import { ascHierarchyAtom } from '../stores/ascStore/ascStore';
 import { useAtomValue } from 'jotai';
 import { loadable } from 'jotai/utils';
-import { IAscMetadata } from '@atomic-state-canvas/asc-viewer-libs';
+import { THierarchyItem } from '../stores/ascStore/types';
 
-const loadableAscStoreAtom = loadable<Promise<IAscMetadata[]>>(ascStoreAsyncAtom);
+const loadableAscHierarchyAtom = loadable<Promise<THierarchyItem>>(ascHierarchyAtom);
 
 export function App() {
-  const value = useAtomValue(loadableAscStoreAtom);
+  const value = useAtomValue(loadableAscHierarchyAtom);
 
   useEffect(() => {
     if (value.state === 'hasData') {
