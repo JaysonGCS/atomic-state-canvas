@@ -142,3 +142,7 @@ export const findAscEntryDetails = async (
   }
   return entrySelectorToDetailsMap;
 };
+
+export const generateId = (ascObject: IAscObject, entryNodeId: string): string => {
+  return `${ascObject.title}-${entryNodeId}-${ascObject.plugin}`;
+};

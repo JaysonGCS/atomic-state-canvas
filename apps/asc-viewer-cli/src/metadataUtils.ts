@@ -1,14 +1,16 @@
 import { generateAtomicStateGraph, logMsg } from '@atomic-state-canvas/core';
 import path from 'path';
-import { findAscEntryDetails } from './utils';
+import { findAscEntryDetails, generateId } from './utils';
 import { promises as fs } from 'fs';
 import { DEFAULT_METADATA_DIR_NAME } from './constants';
+import { IAscEntry, IAscMetadata } from './types';
 
 const OUT_DIR = path.resolve(process.cwd(), DEFAULT_METADATA_DIR_NAME);
 
 export async function generateMetadata(ascFilePath: string) {
   try {
     const entryVariableToDetailsMap = await findAscEntryDetails(ascFilePath);
+    const entries: IAscEntry[] = [];
     for (const { pathName, ascObject } of entryVariableToDetailsMap.values()) {
       if (pathName !== undefined && ascObject !== undefined) {
         // @ts-expect-error -- Ignore type error for now
@@ -18,24 +20,26 @@ export async function generateMetadata(ascFilePath: string) {
         });
         const { getEdgeList } = graph.getInternalData();
         const reverseEdges = getEdgeList();
-
-        const metadata = {
-          ascFilePath,
-          timestamp: Date.now(),
+        entries.push({
+          id: generateId(ascObject, entryNodeId),
           ascObject,
           entryNodeId,
           pathName,
           reverseEdges: reverseEdges
-        };
-        console.log({ metadata });
-        const outPath = path.join(OUT_DIR, path.basename(ascFilePath) + '.json');
-        await fs.mkdir(OUT_DIR, { recursive: true });
-        await fs.writeFile(outPath, JSON.stringify(metadata, null, 2), 'utf-8');
-        logMsg(`Generated metadata: ${outPath}`);
+        });
       } else {
-        console.error(`Unable to generate metadata for ${ascFilePath}`);
+        console.error(`Unable to generate metadata for ${ascObject.entry} at ${ascFilePath}`);
       }
     }
+    const metadata: IAscMetadata = {
+      timestamp: Date.now(),
+      ascFilePath,
+      entries
+    };
+    const outPath = path.join(OUT_DIR, path.basename(ascFilePath) + '.json');
+    await fs.mkdir(OUT_DIR, { recursive: true });
+    await fs.writeFile(outPath, JSON.stringify(metadata, null, 2), 'utf-8');
+    logMsg(`Generated metadata: ${outPath}`);
   } catch (error) {
     console.error(`Error generating metadata for ${ascFilePath}: ${error}`);
   }
