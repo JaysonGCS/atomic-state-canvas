@@ -1,6 +1,7 @@
 *.canvas
 aliasReplacer.js
 tmp/
+.atomic-state-canvas
 
 .DS_store
 */.DS_store
