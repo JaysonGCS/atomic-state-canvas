@@ -3,13 +3,15 @@ import tsParser from '@typescript-eslint/parser';
 import perfectionist from 'eslint-plugin-perfectionist';
 import prettier from 'eslint-plugin-prettier';
 import tseslint from 'typescript-eslint';
+import react from 'eslint-plugin-react';
+import reactHooks from 'eslint-plugin-react-hooks';
 
 export default tseslint.config(
   eslint.configs.recommended,
   tseslint.configs.recommendedTypeChecked,
   {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    plugins: { prettier, perfectionist },
+    plugins: { prettier, perfectionist, react, 'react-hooks': reactHooks },
     languageOptions: {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       parser: tsParser,
@@ -55,7 +57,9 @@ export default tseslint.config(
         {
           allow: ['warn', 'error']
         }
-      ]
+      ],
+      'react-hooks/exhaustive-deps': 'error',
+      'react-hooks/rules-of-hooks': 'error'
     }
   }
 );
