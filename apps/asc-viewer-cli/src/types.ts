@@ -1,5 +1,5 @@
-export interface IAscObject {
-  entry: unknown;
+export interface IAscObject<T = unknown> {
+  entry: T;
   plugin: string;
   title: string;
 }
