@@ -10,6 +10,7 @@
     "baseUrl": ".",
     "outDir": "dist",
     "paths": {
+      "@atomic-state-canvas/asc-viewer-libs": ["libs/asc-viewer-libs/src/index.ts"],
       "@atomic-state-canvas/core": ["dist/libs/core", "libs/core/src/index.ts"],
       "@atomic-state-canvas/core/*": ["libs/core/src/*"]
     }

@@ -1,13 +1,14 @@
 import { useEffect } from 'react';
 import NxWelcome from './nx-welcome';
 import { ascStoreAsyncAtom } from '../stores/ascStore';
-import { useAtom } from 'jotai';
+import { useAtomValue } from 'jotai';
 import { loadable } from 'jotai/utils';
+import { IAscMetadata } from '@atomic-state-canvas/asc-viewer-libs';
 
-const loadableAscStoreAtom = loadable(ascStoreAsyncAtom);
+const loadableAscStoreAtom = loadable<Promise<IAscMetadata[]>>(ascStoreAsyncAtom);
 
 export function App() {
-  const [value] = useAtom(loadableAscStoreAtom);
+  const value = useAtomValue(loadableAscStoreAtom);
 
   useEffect(() => {
     if (value.state === 'hasData') {

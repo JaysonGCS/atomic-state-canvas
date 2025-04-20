@@ -1,6 +1,6 @@
 import { logMsg } from '@atomic-state-canvas/core';
 import { CosmiconfigResult, PublicExplorer } from 'cosmiconfig';
-import { IAscConfig } from './types';
+import { IAscConfig } from '@atomic-state-canvas/asc-viewer-libs';
 
 export const loadConfig = async (explorer: PublicExplorer): Promise<IAscConfig> => {
   try {

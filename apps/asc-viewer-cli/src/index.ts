@@ -10,7 +10,7 @@ import {
   DEFAULT_PORT,
   DEFAULT_WATCH_DIR
 } from './constants';
-import { IAscConfig } from './types';
+import { IAscConfig } from '@atomic-state-canvas/asc-viewer-libs';
 import { loadConfig } from './configUtils';
 import { generateMetadata } from './metadataUtils';
 

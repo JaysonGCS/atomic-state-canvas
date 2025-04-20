@@ -3,7 +3,7 @@ import path from 'path';
 import { findAscEntryDetails, generateHash, generateId } from './utils';
 import { promises as fs } from 'fs';
 import { DEFAULT_METADATA_DIR_NAME } from './constants';
-import { IAscEntry, IAscMetadata } from './types';
+import { IAscEntry, IAscMetadata } from '@atomic-state-canvas/asc-viewer-libs';
 
 const OUT_DIR = path.resolve(process.cwd(), DEFAULT_METADATA_DIR_NAME);
 

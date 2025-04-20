@@ -1,4 +1,4 @@
-import { TEdge } from 'dist/libs/core/src/dataStructure';
+export type TEdge = { source: string; target: string };
 
 export interface IAscObject<T = unknown> {
   entry: T;

@@ -4,7 +4,7 @@ import { simple } from 'acorn-walk';
 import { promises as fs, readdirSync } from 'fs';
 import { ParseResult, parseSync } from 'oxc-parser';
 import path from 'path';
-import { IAscObject } from './types';
+import { IAscObject } from '@atomic-state-canvas/asc-viewer-libs';
 import crypto from 'crypto';
 
 export function astObjectToJSObject<T = unknown>(properties: (Property | SpreadElement)[]): T {
