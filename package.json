@@ -38,7 +38,9 @@
   "description": "A CLI tool for visualizing atomic state relationships using JSON Canvas.",
   "dependencies": {
     "@radix-ui/react-dialog": "^1.1.10",
+    "@radix-ui/react-separator": "^1.1.4",
     "@radix-ui/react-slot": "^1.2.0",
+    "@radix-ui/react-tooltip": "^1.2.3",
     "acorn": "^8.14.1",
     "acorn-walk": "^8.3.4",
     "chokidar": "^4.0.3",
