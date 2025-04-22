@@ -18,8 +18,8 @@ export async function generateMetadata(ascFilePath: string) {
           searchVariableName: ascObject.entry,
           excludePatternInGlob: undefined
         });
-        const { getEdgeList } = graph.getInternalData();
-        const reverseEdges = getEdgeList();
+        const { getReverseEdgeList } = graph.getInternalData();
+        const reverseEdges = getReverseEdgeList();
         entries.push({
           id: generateId(ascObject, entryNodeId),
           ascObject,

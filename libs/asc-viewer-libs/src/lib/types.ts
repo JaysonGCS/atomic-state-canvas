@@ -1,3 +1,5 @@
+export type TCyclicDetails = { reason: 'self-reference' | 'cyclic' };
+
 export type TEdge = { source: string; target: string };
 
 export interface IAscObject<T = unknown> {
