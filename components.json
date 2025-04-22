@@ -1,0 +1,21 @@
+{
+  "$schema": "https://ui.shadcn.com/schema.json",
+  "style": "new-york",
+  "rsc": false,
+  "tsx": true,
+  "tailwind": {
+    "config": "",
+    "css": "apps/asc-viewer/src/styles.css",
+    "baseColor": "neutral",
+    "cssVariables": true,
+    "prefix": ""
+  },
+  "aliases": {
+    "components": "@atomic-state-canvas/components",
+    "utils": "@atomic-state-canvas/components/utils",
+    "ui": "@atomic-state-canvas/components/ui",
+    "lib": "@atomic-state-canvas/components/lib",
+    "hooks": "@atomic-state-canvas/components/hooks"
+  },
+  "iconLibrary": "lucide"
+}

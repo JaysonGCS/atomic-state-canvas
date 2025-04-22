@@ -84,9 +84,13 @@ export class Graph<T extends { id: string; name: string }> {
   }
 
   private getReverseEdgeList = (): TEdge[] => {
-    return Array.from(this.edgeMap).map(([_, { source, target }]) => {
+    return Array.from(this.edgeMap.values()).map(({ source, target }) => {
       return { source: target, target: source };
     });
+  };
+
+  private getEdgeList = (): TEdge[] => {
+    return Array.from(this.edgeMap.values());
   };
 
   getInternalData() {
@@ -94,7 +98,8 @@ export class Graph<T extends { id: string; name: string }> {
       edgeMap: this.edgeMap,
       nodeMap: this.nodeMap,
       adjacencyList: this.adjacencyList,
-      getReverseEdgeList: this.getReverseEdgeList
+      getReverseEdgeList: this.getReverseEdgeList,
+      getEdgeList: this.getEdgeList
     };
   }
 
@@ -123,7 +128,7 @@ export class Graph<T extends { id: string; name: string }> {
       if (!graph.has(source)) {
         graph.set(source, []);
       }
-      graph.get(source)!.push(target);
+      graph.get(source).push(target);
     }
 
     const queue: string[] = [];
@@ -138,8 +143,8 @@ export class Graph<T extends { id: string; name: string }> {
 
     const visited = new Set();
     while (queue.length) {
-      const node = queue.shift()!;
-      const level = nodeToLevelMap.get(node)!;
+      const node = queue.shift();
+      const level = nodeToLevelMap.get(node);
       visited.add(node);
       for (const neighbour of graph.get(node) || []) {
         if (!visited.has(neighbour)) {
@@ -159,10 +164,10 @@ export class Graph<T extends { id: string; name: string }> {
       });
       const visited = new Set();
       while (queue.length) {
-        const node = queue.shift()!;
+        const node = queue.shift();
         visited.add(node);
         for (const neighbor of graph.get(node) || []) {
-          const level = nodeToLevelMap.get(node)!;
+          const level = nodeToLevelMap.get(node);
           if (!visited.has(neighbor)) {
             queue.push(neighbor);
             nodeToLevelMap.set(neighbor, level + 1);
@@ -184,9 +189,9 @@ export class Graph<T extends { id: string; name: string }> {
     // Group nodes by level
     const levelToNodeIdMap: Map<number, string[]> = new Map();
     for (const node of allNodeIds) {
-      const level = compactNodeToLevelMap.get(node)!;
+      const level = compactNodeToLevelMap.get(node);
       if (!levelToNodeIdMap.has(level)) levelToNodeIdMap.set(level, []);
-      levelToNodeIdMap.get(level)!.push(node);
+      levelToNodeIdMap.get(level).push(node);
     }
 
     return {

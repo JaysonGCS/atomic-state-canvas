@@ -1,17 +1,17 @@
 #! /usr/bin/env node
 
-import { program } from 'commander';
-import { textSync } from 'figlet';
-import { writeFile } from 'fs/promises';
 import {
   findAllCycles,
   generateAtomicStateGraph,
   generateGraphLayout,
+  isSupportedDirection,
+  isSupportedLayout,
   logMsg,
   setVerboseLevel
 } from '@atomic-state-canvas/core';
-
-const SUPPORTED_DIRECTION = ['TB', 'LR'];
+import { program } from 'commander';
+import { textSync } from 'figlet';
+import { writeFile } from 'fs/promises';
 
 program
   .description('A CLI tool for visualizing atomic state relationships using JSON Canvas')
@@ -31,39 +31,47 @@ if (!process.argv.slice(2).length) {
 
 const options = program.opts();
 
-const isVerbose = options.verbose;
+const isVerbose = Boolean(options.verbose);
 setVerboseLevel(isVerbose);
 
-const direction = options.direction ?? 'TB';
-if (!SUPPORTED_DIRECTION.includes(direction)) {
-  console.error(`Unsupported direction -d ${direction}`);
+const direction = String(options.direction ?? 'TB');
+if (typeof direction === 'string' && !isSupportedDirection(direction)) {
+  throw new Error(`Unsupported direction -d ${direction}`);
 }
 
-if (options.file) {
-  if (options.search) {
+const layout = String(options.layout ?? 'SIMPLE_TOPOLOGY');
+if (typeof layout === 'string' && !isSupportedLayout(layout)) {
+  throw new Error(`Unsupported layout -l ${layout}`);
+}
+
+if (options.file && typeof options.file === 'string') {
+  if (options.search && typeof options.search === 'string') {
     // eslint-disable-next-line no-console
     console.log(textSync('A-S-C'));
     const pathName = options.file;
     const searchVariableName = options.search;
     logMsg(`File: ${pathName}`);
     logMsg(`Variable: ${searchVariableName}`);
-    options.exclude && logMsg(`Exclude glob pattern: ${options.exclude}`);
+    const excludePattern = typeof options.exclude === 'string' ? options.exclude : undefined;
+    if (excludePattern) {
+      logMsg(`Exclude glob pattern: ${excludePattern}`);
+    }
     const { graph, entryNodeId } = generateAtomicStateGraph(pathName, 'recoil', {
       searchVariableName,
-      excludePatternInGlob: options.exclude
+      excludePatternInGlob: excludePattern
     });
     const { getReverseEdgeList } = graph.getInternalData();
     const { allCycles, cyclicDetailsMap, cyclicStatsMap } = findAllCycles(getReverseEdgeList());
     const jsonCanvas = generateGraphLayout({
-      type: options.layout,
+      type: layout,
       graph,
       leafNodeId: entryNodeId,
       cyclicDetailsMap,
       options: { direction }
     });
-    if (options.output) {
+    if (options.output && typeof options.output === 'string') {
       // If output file name is provided, write to file.
-      writeFile(options.output, JSON.stringify(jsonCanvas));
+      void writeFile(options.output, JSON.stringify(jsonCanvas));
       logMsg(`Output to file: ${options.output}`);
     } else {
       logMsg(JSON.stringify(jsonCanvas, null, 2));

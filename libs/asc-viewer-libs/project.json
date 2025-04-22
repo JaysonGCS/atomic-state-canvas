@@ -1,0 +1,9 @@
+{
+  "name": "asc-viewer-libs",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/asc-viewer-libs/src",
+  "projectType": "library",
+  "tags": [],
+  "// targets": "to see all targets run: nx show project asc-viewer-libs --web",
+  "targets": {}
+}

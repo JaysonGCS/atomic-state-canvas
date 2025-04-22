@@ -1,15 +1,15 @@
 import { Graph, TEdge, TJSonCanvas, TJsonCanvasNode } from '../dataStructure';
 import { TCanvasDirection, TCyclicDetails, TSimpleNode } from '../types';
 import {
-  SimulationLinkDatum,
-  SimulationNodeDatum,
   forceCenter,
   forceCollide,
   forceLink,
   forceManyBody,
   forceSimulation,
   forceX,
-  forceY
+  forceY,
+  SimulationLinkDatum,
+  SimulationNodeDatum
 } from 'd3-force';
 import { DEFAULT_NODE_HEIGHT, DEFAULT_NODE_WIDTH } from './constants';
 import { generateEdgeId } from './utils';
@@ -21,7 +21,7 @@ interface ID3ForceNode extends SimulationNodeDatum {
   id: TSimpleNode['id'];
 }
 
-interface ID3ForceLink extends SimulationLinkDatum<ID3ForceNode> {}
+type ID3ForceLink = SimulationLinkDatum<ID3ForceNode>;
 
 const calculateCenterForce = (direction: TCanvasDirection, leafNodeLevel: number) => {
   if (direction === 'TB') {
