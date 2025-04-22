@@ -1,6 +1,6 @@
 import { Graph } from './dataStructure';
 import { globToRegex } from './generalUtils';
-import { generateGraph, getEntryNode, getFileDetails } from './graphUtils';
+import { _clearVisitedNodeId, generateGraph, getEntryNode, getFileDetails } from './graphUtils';
 import { config } from './plugins/recoil';
 import { TOptions, TSimpleNode } from './types';
 
@@ -41,6 +41,8 @@ export const generateAtomicStateGraph = (
     },
     null
   );
+  // TODO: make generateGraph stateless
+  _clearVisitedNodeId();
 
   return {
     graph,

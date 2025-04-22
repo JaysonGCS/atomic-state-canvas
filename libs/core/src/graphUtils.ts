@@ -270,6 +270,10 @@ export const getEntryNode = (
 };
 const visitedNodeId = new Set();
 
+export const _clearVisitedNodeId = () => {
+  visitedNodeId.clear();
+};
+
 export const generateGraph = (
   fileDetails: TFileDetails,
   entryNodeName: string,

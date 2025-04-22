@@ -18,14 +18,15 @@ export async function generateMetadata(ascFilePath: string) {
           searchVariableName: ascObject.entry,
           excludePatternInGlob: undefined
         });
-        const { getReverseEdgeList } = graph.getInternalData();
+        const { getReverseEdgeList, nodeMap } = graph.getInternalData();
         const reverseEdges = getReverseEdgeList();
         entries.push({
           id: generateId(ascObject, entryNodeId),
           ascObject,
           entryNodeId,
           pathName,
-          reverseEdges: reverseEdges
+          reverseEdges: reverseEdges,
+          nodeMap: Object.fromEntries(nodeMap)
         });
       } else {
         console.error(`Unable to generate metadata for ${ascObject.entry} at ${ascFilePath}`);

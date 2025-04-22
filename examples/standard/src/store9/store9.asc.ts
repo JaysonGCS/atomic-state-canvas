@@ -7,7 +7,7 @@ export const metadataSelector = {
 };
 
 export const metadataSelector2 = {
-  title: 'Title 2',
+  title: 'Group/Title 2',
   entry: fourSelector,
   plugin: 'recoil'
 };
