@@ -1,7 +1,7 @@
 {
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "outDir": "../../dist/apps/asc-cli",
+    "outDir": "../../dist/asc-cli",
     "declaration": false,
     "declarationMap": false
   },
