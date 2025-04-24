@@ -53,7 +53,7 @@ export const Canvas = () => {
           ...edge,
           color:
             cyclicDetailsMap.has(edge.source) && cyclicDetailsMap.has(edge.target)
-              ? 'yellow'
+              ? 'orange'
               : 'teal'
         };
       });

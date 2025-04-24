@@ -1,23 +1,23 @@
 {
   "name": "atomic-state-canvas",
   "version": "0.0.1",
-  "main": "dist/apps/asc-cli/src/index.js",
-  "bin": {
-    "atomic-state-canvas": "./dist/apps/asc-cli/src/index.js"
-  },
   "scripts": {
-    "build": "npx nx run asc-cli:build-and-alias",
-    "build:watch": "npx nx watch --projects=asc-cli --includeDependentProjects --verbose -- npx nx run asc-cli:build-and-alias",
+    "build": "npx nx run asc-cli:build",
+    "build:watch": "npx nx watch --projects=asc-cli --includeDependentProjects --verbose -- npx nx run asc-cli:build",
     "build:tsc": "npx tsc --build && npx tsc aliasReplacer.ts && npx tsc-alias -p apps/asc-cli/tsconfig.json --verbose --debug",
     "build:tsc-watch": "npx tsc --build --watch",
     "viewer:dev": "npx nx serve asc-viewer",
     "build:viewer": "npx nx build asc-viewer",
     "viewer-cli:dev": "npx nx dev asc-viewer-cli",
-    "build:viewer-cli_": "npx nx build asc-viewer-cli",
     "build:viewer-cli": "npx nx run-many --target=build --projects=asc-viewer,asc-viewer-cli",
+    "build:all": "npx nx run-many --target=build --projects=asc-viewer,asc-viewer-cli,asc-cli",
     "test": "echo \"Error: no test specified\" && exit 1",
     "lint": "npx nx run-many --target=lint",
-    "semantic-release": "semantic-release"
+    "semantic-release:dry-run": "semantic-release --dryRun",
+    "semantic-release": "semantic-release",
+    "release-all:dry-run": "npx nx run-many --target=semantic-release --parallel=false --dryRun --verbose",
+    "release-all": "npx nx run-many --target=semantic-release --parallel=false",
+    "prepare": "husky install"
   },
   "repository": "https://github.com/JaysonGCS/atomic-state-canvas",
   "homepage": "https://github.com/JaysonGCS/atomic-state-canvas/blob/main/README.md",
@@ -63,6 +63,8 @@
     "tw-animate-css": "^1.2.7"
   },
   "devDependencies": {
+    "@commitlint/cli": "^17.0.0",
+    "@commitlint/config-conventional": "^17.0.0",
     "@eslint/compat": "^1.2.8",
     "@eslint/eslintrc": "^3.3.1",
     "@eslint/js": "^9.25.0",
@@ -80,6 +82,7 @@
     "@tailwindcss/vite": "^4.1.4",
     "@testing-library/dom": "10.4.0",
     "@testing-library/react": "16.1.0",
+    "@theunderscorer/nx-semantic-release": "^2.12.0",
     "@types/d3-force": "^3.0.10",
     "@types/figlet": "^1.7.0",
     "@types/node": "^22.14.0",
@@ -97,6 +100,7 @@
     "eslint-plugin-prettier": "^5.2.6",
     "eslint-plugin-react": "^7.37.5",
     "eslint-plugin-react-hooks": "^5.2.0",
+    "husky": "^8.0.0",
     "jiti": "2.4.2",
     "jsdom": "~22.1.0",
     "jsonc-eslint-parser": "^2.1.0",
