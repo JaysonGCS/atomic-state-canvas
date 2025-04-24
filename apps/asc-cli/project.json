@@ -7,7 +7,7 @@
     "build-base": {
       "executor": "@nx/js:tsc",
       "options": {
-        "outputPath": "dist/apps/asc-cli",
+        "outputPath": "dist/asc-cli",
         "tsConfig": "apps/asc-cli/tsconfig.json",
         "main": "apps/asc-cli/src/index.ts",
         "generatePackageJson": false
