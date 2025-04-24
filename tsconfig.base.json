@@ -11,10 +11,10 @@
     "outDir": "dist",
     "paths": {
       "@atomic-state-canvas/asc-viewer-libs": ["libs/asc-viewer-libs/src/index.ts"],
-      "@atomic-state-canvas/core": ["dist/libs/core", "libs/core/src/index.ts"],
-      "@atomic-state-canvas/core/*": ["libs/core/src/*"],
       "@atomic-state-canvas/components/*": ["apps/asc-viewer/src/components/*"],
-      "@atomic-state-canvas/components/ui/*": ["apps/asc-viewer/src/components/ui/*"]
+      "@atomic-state-canvas/components/ui/*": ["apps/asc-viewer/src/components/ui/*"],
+      "@atomic-state-canvas/core": ["dist/libs/core", "libs/core/src/index.ts"],
+      "@atomic-state-canvas/core/*": ["libs/core/src/*"]
     }
   },
   "tsc-alias": {

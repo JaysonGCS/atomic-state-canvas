@@ -4,7 +4,7 @@
   "projectType": "application",
   "sourceRoot": "apps/asc-cli/src",
   "targets": {
-    "build": {
+    "build-base": {
       "executor": "@nx/js:tsc",
       "options": {
         "outputPath": "dist/apps/asc-cli",
@@ -20,12 +20,50 @@
         "command": "npx tsc aliasReplacer.ts && npx tsc-alias -p apps/asc-cli/tsconfig.json --verbose"
       }
     },
-    "build-and-alias": {
+    "build_": {
       "executor": "nx:run-commands",
       "options": {
-        "commands": ["nx run asc-cli:build", "nx run asc-cli:postbuild"],
+        "commands": ["nx run asc-cli:build-base", "nx run asc-cli:postbuild"],
         "parallel": false
       }
+    },
+    "build": {
+      "executor": "@nx/esbuild:esbuild",
+      "outputs": ["{options.outputPath}"],
+      "defaultConfiguration": "production",
+      "options": {
+        "platform": "node",
+        "outputPath": "dist/asc-cli",
+        "format": ["cjs"],
+        "bundle": true,
+        "main": "apps/asc-cli/src/index.ts",
+        "tsConfig": "apps/asc-cli/tsconfig.json",
+        "assets": ["LICENSE"],
+        "generatePackageJson": true,
+        "esbuildOptions": {
+          "sourcemap": true,
+          "outExtension": {
+            ".js": ".js"
+          }
+        }
+      },
+      "configurations": {
+        "development": {},
+        "production": {
+          "esbuildOptions": {
+            "sourcemap": false,
+            "outExtension": {
+              ".js": ".js"
+            },
+            "banner": {
+              "js": "#!/usr/bin/env node"
+            }
+          }
+        }
+      }
+    },
+    "semantic-release": {
+      "executor": "@theunderscorer/nx-semantic-release:semantic-release"
     }
   }
 }

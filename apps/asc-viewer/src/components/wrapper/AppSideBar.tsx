@@ -30,7 +30,7 @@ export const AppSideBar = (props: AppSideBarProps) => {
       <SidebarTrigger className="absolute left-4 top-4 z-50 md:hidden" />
       <Sidebar variant="floating" className="p-4">
         <SidebarHeader className="p-4">
-          <h2 className="text-xl font-bold text-sidebar-foreground">{headerLabel}</h2>
+          <h2 className="text-lg font-bold text-sidebar-foreground">{headerLabel}</h2>
         </SidebarHeader>
         <SidebarContent>
           {navigationHierarchy && (
