@@ -2,6 +2,6 @@
   "name": "asc-cli",
   "version": "0.0.1",
   "bin": {
-    "atomic-state-canvas": "./dist/apps/asc-cli/src/index.js"
+    "atomic-state-canvas": "./dist/asc-cli/src/index.js"
   }
 }
