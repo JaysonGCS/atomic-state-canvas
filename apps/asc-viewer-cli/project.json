@@ -1,5 +1,5 @@
 {
-  "name": "asc-viewer-cli",
+  "name": "@atomic-state-canvas/asc-viewer-cli",
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
   "sourceRoot": "apps/asc-viewer-cli/src",
   "projectType": "application",
@@ -43,9 +43,6 @@
         "command": "tsx apps/asc-viewer-cli/src/index.ts --dev",
         "cwd": "."
       }
-    },
-    "semantic-release": {
-      "executor": "@theunderscorer/nx-semantic-release:semantic-release"
     }
   }
 }
