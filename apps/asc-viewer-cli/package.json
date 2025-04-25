@@ -1,5 +1,5 @@
 {
-  "name": "asc-cli",
+  "name": "@atomic-state-canvas/asc-viewer-cli",
   "version": "0.0.1",
   "bin": {
     "asc-viewer": "./dist/apps/asc-viewer-cli/src/index.js"

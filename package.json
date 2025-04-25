@@ -1,6 +1,7 @@
 {
   "name": "atomic-state-canvas",
   "version": "0.0.1",
+  "type": "module",
   "scripts": {
     "build": "npx nx run asc-cli:build",
     "build:watch": "npx nx watch --projects=asc-cli --includeDependentProjects --verbose -- npx nx run asc-cli:build",
@@ -15,10 +16,14 @@
     "lint": "npx nx run-many --target=lint",
     "semantic-release:dry-run": "semantic-release --dryRun",
     "semantic-release": "semantic-release",
-    "release-all:dry-run": "npx nx run-many --target=semantic-release --parallel=false --dryRun --verbose",
+    "release-all:dry-run_": "npx nx run-many --target=semantic-release --parallel=false --dryRun --verbose",
+    "release-all:dry-run": "npx multi-semantic-release --dryRun --verbose --debug",
     "release-all": "npx nx run-many --target=semantic-release --parallel=false",
     "prepare": "husky install"
   },
+  "workspaces": [
+    "apps/asc-cli/**"
+  ],
   "repository": "https://github.com/JaysonGCS/atomic-state-canvas",
   "homepage": "https://github.com/JaysonGCS/atomic-state-canvas/blob/main/README.md",
   "keywords": [
@@ -63,6 +68,7 @@
     "tw-animate-css": "^1.2.7"
   },
   "devDependencies": {
+    "@anolilab/multi-semantic-release": "^1.1.10",
     "@commitlint/cli": "^17.0.0",
     "@commitlint/config-conventional": "^17.0.0",
     "@eslint/compat": "^1.2.8",
@@ -82,7 +88,6 @@
     "@tailwindcss/vite": "^4.1.4",
     "@testing-library/dom": "10.4.0",
     "@testing-library/react": "16.1.0",
-    "@theunderscorer/nx-semantic-release": "^2.12.0",
     "@types/d3-force": "^3.0.10",
     "@types/figlet": "^1.7.0",
     "@types/node": "^22.14.0",

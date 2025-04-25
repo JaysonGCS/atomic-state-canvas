@@ -1,7 +1,13 @@
 {
-  "name": "asc-cli",
+  "name": "@atomic-state-canvas/asc-cli",
   "version": "0.0.1",
+  "main": "./index.js",
   "bin": {
     "atomic-state-canvas": "./index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/JaysonGCS/atomic-state-canvas.git",
+    "directory": "apps/asc-cli"
   }
 }

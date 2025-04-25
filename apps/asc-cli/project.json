@@ -1,5 +1,5 @@
 {
-  "name": "asc-cli",
+  "name": "@atomic-state-canvas/asc-cli",
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
   "projectType": "application",
   "sourceRoot": "apps/asc-cli/src",
@@ -61,9 +61,6 @@
           }
         }
       }
-    },
-    "semantic-release": {
-      "executor": "@theunderscorer/nx-semantic-release:semantic-release"
     }
   }
 }

@@ -1,5 +1,5 @@
 {
-  "name": "asc-viewer",
+  "name": "@atomic-state-canvas/asc-viewer",
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
   "sourceRoot": "apps/asc-viewer/src",
   "projectType": "application",
