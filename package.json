@@ -16,8 +16,8 @@
     "lint": "npx nx run-many --target=lint",
     "semantic-release:dry-run": "semantic-release --dryRun",
     "semantic-release": "semantic-release",
-    "release-all:dry-run": "npx multi-semantic-release --dryRun --debug",
-    "release-all": "npx multi-semantic-release",
+    "release-all:dry-run": "multi-semantic-release --dryRun --debug",
+    "release-all": "multi-semantic-release",
     "prepare": "husky install"
   },
   "workspaces": [
