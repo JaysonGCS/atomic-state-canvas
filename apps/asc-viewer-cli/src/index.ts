@@ -3,6 +3,7 @@ import { logMsg } from '@atomic-state-canvas/core';
 import chokidar from 'chokidar';
 import { cosmiconfig } from 'cosmiconfig';
 import path from 'path';
+import fs from 'fs';
 import { createServer, PluginOption } from 'vite';
 import {
   DEFAULT_EXTENSIONS,
@@ -18,8 +19,35 @@ const explorer = cosmiconfig('asc');
 
 const isDev = process.argv.includes('--dev');
 
+const checkAndClearFolder = (folderPath: string) => {
+  try {
+    if (fs.existsSync(folderPath)) {
+      const files = fs.readdirSync(folderPath);
+
+      for (const file of files) {
+        const filePath = path.join(folderPath, file);
+        const stat = fs.statSync(filePath);
+
+        if (stat.isDirectory()) {
+          // Recursively delete subdirectories
+          fs.rmdirSync(filePath, { recursive: true });
+        } else {
+          // Delete files
+          fs.unlinkSync(filePath);
+        }
+      }
+      logMsg(`Folder "${folderPath}" cleared successfully.`);
+    } else {
+      logMsg(`Folder "${folderPath}" does not exist.`);
+    }
+  } catch (error) {
+    console.error(`An error occurred: ${error}`);
+  }
+};
+
 const watchAndGenerateMetadata = (params: { watchDir: string; extensions: string[] }) => {
   const { watchDir, extensions } = params;
+  checkAndClearFolder(DEFAULT_METADATA_DIR_NAME);
   logMsg(`Setting up file watcher on ${watchDir}`);
   const watcher = chokidar.watch(watchDir, {
     ignored: (path, stats) => {
@@ -60,11 +88,10 @@ async function main() {
     watchDir = path.resolve(process.cwd(), DEFAULT_WATCH_DIR),
     extensions = DEFAULT_EXTENSIONS
   } = config;
-  watchAndGenerateMetadata({ watchDir, extensions });
-
   const viewerPath = isDev
     ? path.resolve(process.cwd(), 'apps/asc-viewer')
-    : path.resolve(process.cwd(), 'dist/apps/asc-viewer');
+    : path.resolve(__dirname, 'asc-viewer');
+
   const server = await createServer({
     root: viewerPath,
     server: {
@@ -72,6 +99,8 @@ async function main() {
     },
     plugins: [customPlugin()]
   });
+  // TODO: Add server.restart() to watcher
+  watchAndGenerateMetadata({ watchDir, extensions });
 
   await server.listen();
   logMsg(
