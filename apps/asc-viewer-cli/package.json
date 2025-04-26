@@ -1,8 +1,9 @@
 {
   "name": "@atomic-state-canvas/asc-viewer-cli",
   "version": "0.0.1",
+  "main": "./index.js",
   "bin": {
-    "asc-viewer": "./dist/apps/asc-viewer-cli/src/index.js"
+    "asc-viewer": "./index.js"
   },
   "repository": {
     "type": "git",
