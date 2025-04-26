@@ -3,5 +3,10 @@
   "version": "0.0.1",
   "bin": {
     "asc-viewer": "./dist/apps/asc-viewer-cli/src/index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/JaysonGCS/atomic-state-canvas.git",
+    "directory": "apps/asc-viewer-cli"
   }
 }

@@ -16,15 +16,18 @@
     "lint": "npx nx run-many --target=lint",
     "semantic-release:dry-run": "semantic-release --dryRun",
     "semantic-release": "semantic-release",
-    "release-all:dry-run_": "npx nx run-many --target=semantic-release --parallel=false --dryRun --verbose",
-    "release-all:dry-run": "npx multi-semantic-release --dryRun --verbose --debug",
-    "release-all": "npx nx run-many --target=semantic-release --parallel=false",
+    "release-all:dry-run": "npx multi-semantic-release --dryRun --debug",
+    "release-all": "npx multi-semantic-release",
     "prepare": "husky install"
   },
   "workspaces": [
-    "apps/asc-cli/**"
+    "apps/asc-cli/**",
+    "apps/asc-viewer-cli/**"
   ],
-  "repository": "https://github.com/JaysonGCS/atomic-state-canvas",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/JaysonGCS/atomic-state-canvas.git"
+  },
   "homepage": "https://github.com/JaysonGCS/atomic-state-canvas/blob/main/README.md",
   "keywords": [
     "cli",
