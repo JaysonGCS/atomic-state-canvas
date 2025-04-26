@@ -1,48 +1,13 @@
 # Atomic State Canvas
-This is a project for visualizing atomic state relationships using [JSON Canvas](https://jsoncanvas.org/). Currently, it only supports [Recoil.js](https://recoiljs.org/) by default.
-
-## Installation
-```bash
-npm install @atomic-state-canvas/asc-cli -g
-```
+This is a mono-repository that contains a collection of applications for visualizing atomic state relationships using [JSON Canvas](https://jsoncanvas.org/) or a custom interactive "storybook"-like web application. Currently, it only supports [Recoil.js](https://recoiljs.org/) by default.
 
 ## Usage
 
-### Prerequisite
-- Make sure that you have [Node](https://nodejs.org/en) installed.
+| Application    | Description                                                                                                                                                                                                                              | Installation                                       |
+|----------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|----------------------------------------------------|
+| [asc-cli](./apps/asc-cli)        | CLI tool for visualizing atomic state relationships. It visualizes atomic state relationships using [JSON Canvas](https://jsoncanvas.org/)                                                                                               | npm install @atomic-state-canvas/asc-cli -g        |
+| [asc-viewer-cli](./apps/asc-viewer-cli) | An interactive web application for visualizing atomic state relationships. By launching the development tool, it looks for ".asc." files in the directory and automatically populates the atomic graphs in a "Storybook"-like experience. | npm install @atomic-state-canvas/asc-viewer-cli -g |
 
-### Examples
-```bash
-# Help
-atomic-state-canvas -h
-
-# Parse file and traverse based on search variable, then print JSON Canvas
-atomic-state-canvas -f ./src/storeOne/entrySelector.ts -s entrySelector
-
-# Parse file and traverse based on search variable, then output JSON Canvas to file
-atomic-state-canvas -f ./src/storeOne/entrySelector.ts -s entrySelector -o test.canvas
-```
-
-## Local Development
-### Get Started
-```bash
-npm build:watch
-```
-
-### Examples
-```bash
-# Standard
-node dist/asc-cli/index.js -f examples/standard/src/store1/entrySelector.ts -s entrySelector -o test.canvas
-
-# Circular Dependency
-node dist/asc-cli/index.js -f examples/standard/src/store2/entrySelector.ts -s entrySelector -o test.canvas
-
-# Self Referencing Circular Dependency
-node dist/asc-cli/index.js -f examples/standard/src/store3/entrySelector.ts -s entrySelector -o test.canvas
-
-# With glob exclusion
-node dist/asc-cli/index.js -f examples/standard/src/store4/entrySelector.ts -s entrySelector -o test.canvas -e "*.test.*"
-```
 
 ## Roadmap
 - [ ] Support more state management libraries such as [Jotai](https://jotai.org/)
