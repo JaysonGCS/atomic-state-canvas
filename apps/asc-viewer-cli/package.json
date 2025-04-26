@@ -8,5 +8,9 @@
     "type": "git",
     "url": "https://github.com/JaysonGCS/atomic-state-canvas.git",
     "directory": "apps/asc-viewer-cli"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
   }
 }
