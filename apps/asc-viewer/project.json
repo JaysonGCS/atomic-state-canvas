@@ -9,7 +9,8 @@
     "build": {
       "executor": "@nx/vite:build",
       "options": {
-        "outputPath": "dist/apps/asc-viewer"
+        "// outputPath": "dist/apps/asc-viewer",
+        "outputPath": "dist/asc-viewer-cli/asc-viewer"
       }
     }
   }

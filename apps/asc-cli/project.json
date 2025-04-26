@@ -38,7 +38,7 @@
         "bundle": true,
         "main": "apps/asc-cli/src/index.ts",
         "tsConfig": "apps/asc-cli/tsconfig.json",
-        "assets": ["LICENSE"],
+        "assets": ["LICENSE", "apps/asc-cli/README.md"],
         "generatePackageJson": true,
         "esbuildOptions": {
           "sourcemap": true,
