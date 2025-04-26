@@ -1,7 +1,12 @@
-# Atomic State Canvas Cli
-This is a Cli tool for analyzing and visualizing atomic state relationships using [JSON Canvas](https://jsoncanvas.org/).
+# Atomic State Canvas CLI
+This is a CLI tool for analyzing and visualizing atomic state relationships using [JSON Canvas](https://jsoncanvas.org/).
 
-## Cli Command Examples
+## Installation
+```bash
+npm install @atomic-state-canvas/asc-cli -g
+```
+
+## CLI Command Examples
 ```bash
 # Help
 atomic-state-canvas -h

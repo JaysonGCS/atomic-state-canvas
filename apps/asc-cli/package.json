@@ -12,5 +12,16 @@
   },
   "publishConfig": {
     "access": "public"
-  }
+  },
+  "keywords": [
+    "cli",
+    "json canvas",
+    "flowchart",
+    "atomic state",
+    "visualization",
+    "atomic state visualization",
+    "recoil graph"
+  ],
+  "description": "A CLI tool for analyzing and visualizing atomic state relationships using JSON Canvas.",
+  "license": "MIT"
 }

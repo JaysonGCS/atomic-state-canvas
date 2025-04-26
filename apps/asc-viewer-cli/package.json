@@ -2,9 +2,19 @@
   "name": "@atomic-state-canvas/asc-viewer-cli",
   "version": "0.0.1",
   "main": "./index.js",
+  "license": "MIT",
   "bin": {
     "asc-viewer": "./index.js"
   },
+  "keywords": [
+    "cli",
+    "flowchart",
+    "atomic state",
+    "visualization",
+    "atomic state visualization",
+    "recoil graph"
+  ],
+  "description": "An interactive web application for analyzing and visualizing atomic state relationships.",
   "repository": {
     "type": "git",
     "url": "https://github.com/JaysonGCS/atomic-state-canvas.git",

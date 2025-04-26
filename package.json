@@ -43,7 +43,7 @@
     "url": "https://github.com/JaysonGCS"
   },
   "license": "MIT",
-  "description": "A CLI tool for visualizing atomic state relationships using JSON Canvas.",
+  "description": "This is a mono-repository that contains a collection of applications for analyzing and visualizing atomic state relationships.",
   "dependencies": {
     "@radix-ui/react-dialog": "^1.1.10",
     "@radix-ui/react-separator": "^1.1.4",
