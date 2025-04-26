@@ -68,14 +68,19 @@ const customPlugin = (): PluginOption => {
       server.middlewares.use('/.atomic-state-canvas', async (req, res) => {
         const fs = await import('fs/promises');
         const path = await import('path');
-        const files = await fs.readdir('.atomic-state-canvas');
-        const data = await Promise.all(
-          files.map(async (f) =>
-            JSON.parse(await fs.readFile(path.join('.atomic-state-canvas', f), 'utf-8'))
-          )
-        );
-        res.setHeader('Content-Type', 'application/json');
-        res.end(JSON.stringify(data));
+        try {
+          const files = await fs.readdir(DEFAULT_METADATA_DIR_NAME);
+          const data = await Promise.all(
+            files.map(async (f) =>
+              JSON.parse(await fs.readFile(path.join(DEFAULT_METADATA_DIR_NAME, f), 'utf-8'))
+            )
+          );
+          res.setHeader('Content-Type', 'application/json');
+          res.end(JSON.stringify(data));
+        } catch (err) {
+          console.error(err);
+          res.end(JSON.stringify([]));
+        }
       });
     }
   };
