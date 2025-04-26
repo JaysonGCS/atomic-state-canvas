@@ -11,7 +11,6 @@
     "directory": "apps/asc-cli"
   },
   "publishConfig": {
-    "access": "public",
-    "provenance": true
+    "access": "public"
   }
 }
