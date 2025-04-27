@@ -1,5 +1,5 @@
 import { useAtomValue } from 'jotai';
-import { useCallback, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import ForceGraph3D, {
   ForceGraphMethods,
   GraphData,
@@ -46,7 +46,14 @@ export const Canvas = (props: CanvasProps) => {
     useRef<ForceGraphMethods2D<NodeObject<TNodeExtra>, LinkObject<TNodeExtra, TLinkExtra>>>(
       undefined
     );
+  const hasInitialZoomRef = useRef<boolean>(false);
   const [hoverNode, setHoverNode] = useState<NodeObject<TNodeExtra> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      hasInitialZoomRef.current = false;
+    };
+  }, [type]);
 
   const { graphData, bidirectionalLinkCountBetweenNodesMap } = useMemo<{
     graphData: GraphData<TNodeExtra, TLinkExtra>;
@@ -118,6 +125,18 @@ export const Canvas = (props: CanvasProps) => {
     return new Set();
   }, [hoverNode]);
 
+  const handleEngineStop = useCallback(() => {
+    if (hasInitialZoomRef.current) {
+      return;
+    }
+    if (type === '3D') {
+      graph3dRef.current?.zoomToFit(500, 100);
+    } else {
+      graph2dRef.current?.zoomToFit(500, 100);
+    }
+    hasInitialZoomRef.current = true;
+  }, [type]);
+
   return type === '2D' ? (
     <ForceGraph2D
       ref={graph2dRef}
@@ -160,7 +179,7 @@ export const Canvas = (props: CanvasProps) => {
       }}
       cooldownTicks={100}
       onNodeHover={handleNodeHover}
-      onEngineStop={() => graph2dRef.current?.zoomToFit(500, 100)}
+      onEngineStop={handleEngineStop}
     />
   ) : (
     <ForceGraph3D
@@ -186,7 +205,7 @@ export const Canvas = (props: CanvasProps) => {
       linkColor={'color'}
       backgroundColor="#f8fafc"
       cooldownTicks={100}
-      onEngineStop={() => graph3dRef.current?.zoomToFit(500, 100)}
+      onEngineStop={handleEngineStop}
     />
   );
 };
