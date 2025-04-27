@@ -1,5 +1,5 @@
 import { useAtomValue } from 'jotai';
-import { useMemo, useRef } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import ForceGraph3D, {
   ForceGraphMethods,
   GraphData,
@@ -32,6 +32,7 @@ const NODE_COLOR_ERROR = 'red';
 const EDGE_COLOR_VALID = 'mediumturquoise';
 const EDGE_COLOR_ERROR = 'orange';
 
+const NODE_REL_SIZE = 4;
 const CURVATURE_FACTOR = 0.2;
 
 export const Canvas = (props: CanvasProps) => {
@@ -45,6 +46,7 @@ export const Canvas = (props: CanvasProps) => {
     useRef<ForceGraphMethods2D<NodeObject<TNodeExtra>, LinkObject<TNodeExtra, TLinkExtra>>>(
       undefined
     );
+  const [hoverNode, setHoverNode] = useState<NodeObject<TNodeExtra> | null>(null);
 
   const { graphData, bidirectionalLinkCountBetweenNodesMap } = useMemo<{
     graphData: GraphData<TNodeExtra, TLinkExtra>;
@@ -105,20 +107,38 @@ export const Canvas = (props: CanvasProps) => {
     };
   }, [ascEntry]);
 
+  const handleNodeHover = useCallback((node: NodeObject<TNodeExtra> | null) => {
+    setHoverNode(node);
+  }, []);
+
+  const highlightNodes = useMemo<Set<NodeObject<TNodeExtra>>>(() => {
+    if (hoverNode) {
+      // TODO: Implement logic to highlight nodes based on hoverNode
+    }
+    return new Set();
+  }, [hoverNode]);
+
   return type === '2D' ? (
     <ForceGraph2D
       ref={graph2dRef}
       graphData={graphData}
+      nodeRelSize={NODE_REL_SIZE}
       nodeLabel={'label'}
       nodeCanvasObjectMode={() => 'after'}
       nodeCanvasObject={(node: NodeObject<TNodeExtra>, ctx, globalScale) => {
-        const { label, x = 0, y = 0 } = node;
+        const { label, x = 0, y = 0, color } = node;
         const fontSize = 12 / globalScale;
         ctx.font = `${fontSize}px Sans-Serif`;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
         ctx.fillStyle = 'black';
         ctx.fillText(label, x, y + 6);
+        if (node === hoverNode || highlightNodes.has(node)) {
+          ctx.beginPath();
+          ctx.arc(x, y, NODE_REL_SIZE * 1.4, 0, 2 * Math.PI, false);
+          ctx.strokeStyle = color;
+          ctx.stroke();
+        }
       }}
       linkWidth={2}
       linkDirectionalArrowLength={5}
@@ -139,6 +159,7 @@ export const Canvas = (props: CanvasProps) => {
         return curvature * CURVATURE_FACTOR;
       }}
       cooldownTicks={100}
+      onNodeHover={handleNodeHover}
       onEngineStop={() => graph2dRef.current?.zoomToFit(500, 100)}
     />
   ) : (
