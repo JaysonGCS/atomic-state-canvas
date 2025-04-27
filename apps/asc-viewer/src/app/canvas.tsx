@@ -16,6 +16,12 @@ type TLinkExtra = { color: string };
 // eslint-disable-next-line @typescript-eslint/no-unsafe-call
 const extraRenderers = [new CSS2DRenderer()];
 
+const NODE_COLOR_VALID = 'limegreen';
+const NODE_COLOR_ENTRY = 'green';
+const NODE_COLOR_ERROR = 'red';
+const EDGE_COLOR_VALID = 'mediumturquoise';
+const EDGE_COLOR_ERROR = 'orange';
+
 export const Canvas = () => {
   const ascEntry = useAtomValue(currentAscEntryAtom);
   const graphRef =
@@ -25,6 +31,7 @@ export const Canvas = () => {
 
   const graphData = useMemo<GraphData<TNodeExtra, TLinkExtra>>(() => {
     if (ascEntry) {
+      const entryNodeId = ascEntry.entryNodeId;
       const edges = ascEntry.reverseEdges;
       const nodeMap = ascEntry.nodeMap;
       const { cyclicDetailsMap } = findAllCycles(edges);
@@ -33,18 +40,26 @@ export const Canvas = () => {
         const sourceNode = total.get(source);
         const targetNode = total.get(target);
         if (!sourceNode) {
-          let color = 'green';
+          let color = NODE_COLOR_VALID;
           if (cyclicDetailsMap.has(source)) {
-            color = 'red';
+            color = NODE_COLOR_ERROR;
           }
-          total.set(source, { id: source, color, label: nodeMap[source].name });
+          total.set(source, {
+            id: source,
+            color: entryNodeId === source ? NODE_COLOR_ENTRY : color,
+            label: nodeMap[source].name
+          });
         }
         if (!targetNode) {
-          let color = 'green';
+          let color = NODE_COLOR_VALID;
           if (cyclicDetailsMap.has(target)) {
-            color = 'red';
+            color = NODE_COLOR_ERROR;
           }
-          total.set(target, { id: target, color, label: nodeMap[target].name });
+          total.set(target, {
+            id: target,
+            color: entryNodeId === target ? NODE_COLOR_ENTRY : color,
+            label: nodeMap[target].name
+          });
         }
         return total;
       }, new Map<string, NodeObject<TNodeExtra>>());
@@ -53,8 +68,8 @@ export const Canvas = () => {
           ...edge,
           color:
             cyclicDetailsMap.has(edge.source) && cyclicDetailsMap.has(edge.target)
-              ? 'orange'
-              : 'teal'
+              ? EDGE_COLOR_ERROR
+              : EDGE_COLOR_VALID
         };
       });
       return { nodes: Array.from(idToNodesMap.values()), links };
