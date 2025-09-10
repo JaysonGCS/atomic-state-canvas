@@ -34,6 +34,16 @@ const getDependencies = (argument: Argument): string[] => {
   simple(
     argument,
     {
+      Property(node) {
+        if (
+          node.key.type === 'Identifier' &&
+          node.key.name === 'default' &&
+          node.value.type === 'Identifier'
+        ) {
+          // Add the default value as a dependency
+          dependencySet.add(node.value.name);
+        }
+      },
       CallExpression(node) {
         if (node.callee.type === 'Identifier' && node.callee.name === 'get') {
           const getterArgument = node.arguments.at(0);

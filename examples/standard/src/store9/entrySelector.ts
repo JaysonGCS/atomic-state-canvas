@@ -1,4 +1,4 @@
-import { selector } from 'recoil';
+import { atom, selector } from 'recoil';
 
 export const rootSelector = selector<string>({
   key: '_rootSelector',
@@ -7,9 +7,24 @@ export const rootSelector = selector<string>({
   }
 });
 
+export const defaultDependentSelector = selector<string>({
+  key: 'defaultDependentSelector',
+  get: ({ get }) => {
+    get(rootSelector);
+    return '';
+  }
+});
+
+export const defaultAtom = atom<string>({
+  key: 'defaultAtom',
+  // This tests the default value dependency tracking
+  default: defaultDependentSelector
+});
+
 export const sideSelector = selector<string>({
   key: '_sideSelector',
-  get: () => {
+  get: ({ get }) => {
+    get(defaultAtom);
     return '';
   }
 });
