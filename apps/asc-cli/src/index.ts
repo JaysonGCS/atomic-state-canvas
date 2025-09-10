@@ -8,7 +8,7 @@ import {
   setVerboseLevel
 } from '@atomic-state-canvas/core';
 import { program } from 'commander';
-import { textSync } from 'figlet';
+import figlet from 'figlet';
 import { writeFile } from 'fs/promises';
 
 program
@@ -45,7 +45,7 @@ if (typeof layout === 'string' && !isSupportedLayout(layout)) {
 if (options.file && typeof options.file === 'string') {
   if (options.search && typeof options.search === 'string') {
     // eslint-disable-next-line no-console
-    console.log(textSync('A-S-C'));
+    console.log(figlet.textSync('A-S-C'));
     const pathName = options.file;
     const searchVariableName = options.search;
     logMsg(`File: ${pathName}`);
