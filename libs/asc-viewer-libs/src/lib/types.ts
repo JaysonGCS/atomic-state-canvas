@@ -15,6 +15,7 @@ export interface IAscObject<T = unknown> {
 }
 
 export interface IAscConfig {
+  excludePatternInGlob?: string;
   extensions?: string[];
   port?: number;
   watchDir?: string;

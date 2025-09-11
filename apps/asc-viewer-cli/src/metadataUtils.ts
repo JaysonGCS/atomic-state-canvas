@@ -7,16 +7,19 @@ import { IAscEntry, IAscMetadata } from '@atomic-state-canvas/asc-viewer-libs';
 
 const OUT_DIR = path.resolve(process.cwd(), DEFAULT_METADATA_DIR_NAME);
 
-export async function generateMetadata(ascFilePath: string) {
+export async function generateMetadata(
+  ascFilePath: string,
+  excludePatternInGlob: string | undefined
+) {
   try {
-    const entryVariableToDetailsMap = await findAscEntryDetails(ascFilePath);
+    const entryVariableToDetailsMap = await findAscEntryDetails(ascFilePath, excludePatternInGlob);
     const entries: IAscEntry[] = [];
     for (const { pathName, ascObject } of entryVariableToDetailsMap.values()) {
       if (pathName !== undefined && ascObject !== undefined) {
         // @ts-expect-error -- Ignore type error for now
         const { graph, entryNodeId } = generateAtomicStateGraph(pathName, ascObject.plugin, {
           searchVariableName: ascObject.entry,
-          excludePatternInGlob: undefined
+          excludePatternInGlob
         });
         const { getReverseEdgeList, nodeMap } = graph.getInternalData();
         const reverseEdges = getReverseEdgeList();
