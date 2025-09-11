@@ -45,8 +45,12 @@ const checkAndClearFolder = (folderPath: string) => {
   }
 };
 
-const watchAndGenerateMetadata = (params: { watchDir: string; extensions: string[] }) => {
-  const { watchDir, extensions } = params;
+const watchAndGenerateMetadata = (params: {
+  watchDir: string;
+  extensions: string[];
+  excludePatternInGlob: string | undefined;
+}) => {
+  const { watchDir, extensions, excludePatternInGlob } = params;
   checkAndClearFolder(DEFAULT_METADATA_DIR_NAME);
   logMsg(`Setting up file watcher on ${watchDir}`);
   const watcher = chokidar.watch(watchDir, {
@@ -57,8 +61,8 @@ const watchAndGenerateMetadata = (params: { watchDir: string; extensions: string
       return stats?.isFile() && !extensions.some((ext) => path.endsWith(ext));
     }
   });
-  watcher.on('add', generateMetadata);
-  watcher.on('change', generateMetadata);
+  watcher.on('add', (path) => generateMetadata(path, excludePatternInGlob));
+  watcher.on('change', (path) => generateMetadata(path, excludePatternInGlob));
 };
 
 const customPlugin = (): PluginOption => {
@@ -91,7 +95,8 @@ async function main() {
   const {
     port = DEFAULT_PORT,
     watchDir = path.resolve(process.cwd(), DEFAULT_WATCH_DIR),
-    extensions = DEFAULT_EXTENSIONS
+    extensions = DEFAULT_EXTENSIONS,
+    excludePatternInGlob
   } = config;
   const viewerPath = isDev
     ? path.resolve(process.cwd(), 'apps/asc-viewer')
@@ -105,7 +110,7 @@ async function main() {
     plugins: [customPlugin()]
   });
   // TODO: Add server.restart() to watcher
-  watchAndGenerateMetadata({ watchDir, extensions });
+  watchAndGenerateMetadata({ watchDir, extensions, excludePatternInGlob });
 
   await server.listen();
   logMsg(

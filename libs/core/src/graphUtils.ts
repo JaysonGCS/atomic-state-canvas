@@ -190,7 +190,9 @@ const convertImportDeclarationToImportDetails = (
     const fileNameWithoutExtension = fileName.split('.')[0];
     return fileNameReferenceWithoutExtension === fileNameWithoutExtension;
   });
-
+  if (!fileNameWithExtension) {
+    return [];
+  }
   return [
     {
       importVariables,

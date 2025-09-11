@@ -1,4 +1,9 @@
-import { getFileDetailsGivenFramework, TFileDetails, TSimpleNode } from '@atomic-state-canvas/core';
+import {
+  getFileDetailsGivenFramework,
+  globToRegex,
+  TFileDetails,
+  TSimpleNode
+} from '@atomic-state-canvas/core';
 import { Expression, Property, SpreadElement } from 'acorn';
 import { simple } from 'acorn-walk';
 import { promises as fs, readdirSync } from 'fs';
@@ -39,11 +44,13 @@ function evaluateExpression(node: Expression): unknown {
 }
 
 export const findAscEntryDetails = async (
-  ascConfigFilePath: string
+  ascConfigFilePath: string,
+  excludePatternInGlob: string | undefined
 ): Promise<Map<string, { ascObject: IAscObject<string>; pathName: string | undefined }>> => {
   const fileContent = await fs.readFile(ascConfigFilePath, 'utf-8');
   const parseResult: ParseResult = parseSync(ascConfigFilePath, fileContent);
   const baseDir = path.dirname(ascConfigFilePath);
+  const excludePattern = excludePatternInGlob ? globToRegex(excludePatternInGlob) : undefined;
   const entrySelectorToDetailsMap = new Map<
     string,
     { ascObject: IAscObject<string>; pathName: string | undefined }
@@ -120,7 +127,7 @@ export const findAscEntryDetails = async (
                 const fileDetails: TFileDetails = getFileDetailsGivenFramework(
                   potentialActualAbsolutePath,
                   ascDetails.ascObject.plugin,
-                  {},
+                  { excludePattern },
                   {
                     skipImport: true
                   }
