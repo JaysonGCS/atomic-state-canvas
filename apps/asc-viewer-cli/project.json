@@ -16,7 +16,7 @@
         "bundle": true,
         "main": "apps/asc-viewer-cli/src/index.ts",
         "tsConfig": "apps/asc-viewer-cli/tsconfig.app.json",
-        "assets": ["apps/asc-viewer-cli/src/assets", "LICENSE"],
+        "assets": ["apps/asc-viewer-cli/src/assets", "LICENSE", "apps/asc-viewer-cli/README.md"],
         "generatePackageJson": true,
         "esbuildOptions": {
           "sourcemap": true,

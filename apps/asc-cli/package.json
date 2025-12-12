@@ -11,7 +11,8 @@
     "directory": "apps/asc-cli"
   },
   "publishConfig": {
-    "access": "public"
+    "access": "public",
+    "provenance": true
   },
   "keywords": [
     "cli",

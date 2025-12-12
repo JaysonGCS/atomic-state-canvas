@@ -4,11 +4,23 @@ on:
   push:
     branches:
       - main
+  workflow_dispatch:
+    inputs:
+      release-type:
+        description: 'Release type (patch, minor, major)'
+        required: false
+        default: 'patch'
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
 
 permissions:
   contents: write
   pull-requests: write
   issues: write
+  id-token: write  # Required for NPM provenance attestations
 
 jobs:
   release:
@@ -35,4 +47,3 @@ jobs:
         run: npm run release-all
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
