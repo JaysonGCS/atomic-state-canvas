@@ -38,6 +38,9 @@ jobs:
       - name: Upgrade npm
         run: npm install -g npm@latest
 
+      - name: Fix .npmrc
+        run: npm config delete always-auth
+
       - name: Install dependencies
         run: npm ci
 
@@ -47,12 +50,7 @@ jobs:
       - name: Audit signatures
         run: npm audit signatures
 
-      - name: Debug Verify Publish Access
-        run: |
-          npm whoami || echo "Whoami failed (expected for OIDC sometime)"
-          cd apps/asc-cli
-          npm publish --dry-run
-        continue-on-error: true
+
 
       - name: Release
         run: npm run release-all
