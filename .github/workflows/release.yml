@@ -27,20 +27,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Set up Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: '24'
           registry-url: 'https://registry.npmjs.org'
 
       - name: Upgrade npm
         run: npm install -g npm@latest
-
-      - name: Reset npm config
-        run: |
-          rm -f ~/.npmrc
 
       - name: Install dependencies
         run: npm ci
@@ -50,8 +46,6 @@ jobs:
 
       - name: Audit signatures
         run: npm audit signatures
-
-
 
       - name: Release
         run: npm run release-all
