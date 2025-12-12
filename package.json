@@ -73,7 +73,7 @@
     "tw-animate-css": "^1.2.7"
   },
   "devDependencies": {
-    "@anolilab/multi-semantic-release": "^1.1.12",
+    "@anolilab/multi-semantic-release": "^3.2.2",
     "@commitlint/cli": "^17.0.0",
     "@commitlint/config-conventional": "^17.0.0",
     "@eslint/compat": "^1.2.8",
@@ -117,7 +117,7 @@
     "nx": "20.8.0",
     "postcss": "8.4.38",
     "prettier": "^3.5.3",
-    "semantic-release": "^24.2.3",
+    "semantic-release": "^24.2.9",
     "tailwindcss": "^4.1.4",
     "tsc-alias": "^1.8.13",
     "tsx": "^4.19.3",
