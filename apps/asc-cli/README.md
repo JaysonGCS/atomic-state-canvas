@@ -4,6 +4,9 @@ This is a CLI tool for analyzing and visualizing atomic state relationships usin
 ## Installation
 ```bash
 npm install @atomic-state-canvas/asc-cli -g
+
+# Or using npx
+npx @atomic-state-canvas/asc-cli -h
 ```
 
 ## CLI Command Examples

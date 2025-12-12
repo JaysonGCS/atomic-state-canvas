@@ -5,4 +5,7 @@ An interactive web application for analyzing and visualizing atomic state relati
 ## Installation
 ```bash
 npm install @atomic-state-canvas/asc-viewer-cli -D
+
+# Start the viewer
+npx asc-viewer-cli
 ```
