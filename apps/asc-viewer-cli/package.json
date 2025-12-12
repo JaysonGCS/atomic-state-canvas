@@ -21,6 +21,7 @@
     "directory": "apps/asc-viewer-cli"
   },
   "publishConfig": {
-    "access": "public"
+    "access": "public",
+    "provenance": true
   }
 }
