@@ -41,8 +41,6 @@ jobs:
       - name: Reset npm config
         run: |
           rm -f ~/.npmrc
-          npm config set //registry.npmjs.org/:_authToken= "" --userconfig=/home/runner/.npmrc
-
 
       - name: Install dependencies
         run: npm ci
