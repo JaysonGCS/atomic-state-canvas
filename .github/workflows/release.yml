@@ -48,3 +48,5 @@ jobs:
         run: npm run release-all
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NPM_CONFIG_PROVENANCE: true
+          NPM_TOKEN: "placeholder" # Bypass semantic-release validation; actual auth is via OIDC in .npmrc
