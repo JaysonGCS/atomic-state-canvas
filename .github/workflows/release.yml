@@ -51,5 +51,3 @@ jobs:
         run: npm run release-all
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NPM_TOKEN: ""
-          NODE_AUTH_TOKEN: ""
