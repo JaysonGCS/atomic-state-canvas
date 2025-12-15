@@ -87,14 +87,14 @@ const customPlugin = (): PluginOption => {
 };
 
 export interface LaunchViewerOptions {
+  isDev?: boolean;
   port?: number;
   watchDir?: string;
-  isDev?: boolean;
 }
 
 export interface LaunchViewerResult {
-  server: ViteDevServer;
   port: number;
+  server: ViteDevServer;
   url: string;
 }
 

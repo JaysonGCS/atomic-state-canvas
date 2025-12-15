@@ -1,8 +1,7 @@
-import { z } from 'zod';
-import { zodToJsonSchema } from 'zod-to-json-schema';
+import { toJSONSchema, z } from 'zod';
 import {
-  generateAtomicStateGraph,
   findAllCycles,
+  generateAtomicStateGraph,
   getFileDetailsGivenFramework
 } from '@atomic-state-canvas/core';
 import { launchViewer } from './viewer';
@@ -39,25 +38,25 @@ export const tools = [
     name: 'analyze_state',
     description:
       'Generate a dependency graph from an entry file and variable. Returns the graph structure with nodes and edges showing state dependencies.',
-    inputSchema: zodToJsonSchema(analyzeStateSchema)
+    inputSchema: toJSONSchema(analyzeStateSchema)
   },
   {
     name: 'find_cycles',
     description:
       'Detect cyclic dependencies in state management code. Returns information about self-references and cyclic dependency chains.',
-    inputSchema: zodToJsonSchema(findCyclesSchema)
+    inputSchema: toJSONSchema(findCyclesSchema)
   },
   {
     name: 'list_atoms',
     description:
       'List all atoms and selectors in a file with their dependencies. Useful for understanding what state is defined in a specific file.',
-    inputSchema: zodToJsonSchema(listAtomsSchema)
+    inputSchema: toJSONSchema(listAtomsSchema)
   },
   {
     name: 'launch_viewer',
     description:
       'Start the Atomic State Canvas web viewer for visual exploration of state dependencies. Opens an interactive 2D/3D visualization.',
-    inputSchema: zodToJsonSchema(launchViewerSchema)
+    inputSchema: toJSONSchema(launchViewerSchema)
   }
 ];
 
