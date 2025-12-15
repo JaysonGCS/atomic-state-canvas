@@ -1,121 +1,47 @@
 #!/usr/bin/env node
+import { Command } from 'commander';
 import { logMsg } from '@atomic-state-canvas/core';
-import chokidar from 'chokidar';
-import { cosmiconfig } from 'cosmiconfig';
-import path from 'path';
-import fs from 'fs';
-import { createServer, PluginOption } from 'vite';
-import {
-  DEFAULT_EXTENSIONS,
-  DEFAULT_METADATA_DIR_NAME,
-  DEFAULT_PORT,
-  DEFAULT_WATCH_DIR
-} from './constants';
-import { IAscConfig } from '@atomic-state-canvas/asc-viewer-libs';
-import { loadConfig } from './configUtils';
-import { generateMetadata } from './metadataUtils';
+import { launchViewer } from './mcp/viewer';
+import { startMcpServer } from './mcp/index';
 
-const explorer = cosmiconfig('asc');
+const program = new Command();
 
-const isDev = process.argv.includes('--dev');
+program.name('asc-viewer').description('Atomic State Canvas Viewer CLI');
 
-const checkAndClearFolder = (folderPath: string) => {
-  try {
-    if (fs.existsSync(folderPath)) {
-      const files = fs.readdirSync(folderPath);
-
-      for (const file of files) {
-        const filePath = path.join(folderPath, file);
-        const stat = fs.statSync(filePath);
-
-        if (stat.isDirectory()) {
-          // Recursively delete subdirectories
-          fs.rmdirSync(filePath, { recursive: true });
-        } else {
-          // Delete files
-          fs.unlinkSync(filePath);
-        }
-      }
-      logMsg(`Folder "${folderPath}" cleared successfully.`);
-    } else {
-      logMsg(`Folder "${folderPath}" does not exist.`);
-    }
-  } catch (error) {
-    console.error(`An error occurred: ${error}`);
-  }
-};
-
-const watchAndGenerateMetadata = (params: {
-  watchDir: string;
-  extensions: string[];
-  excludePatternInGlob: string | undefined;
-}) => {
-  const { watchDir, extensions, excludePatternInGlob } = params;
-  checkAndClearFolder(DEFAULT_METADATA_DIR_NAME);
-  logMsg(`Setting up file watcher on ${watchDir}`);
-  const watcher = chokidar.watch(watchDir, {
-    ignored: (path, stats) => {
-      if (path.includes(DEFAULT_METADATA_DIR_NAME)) {
-        return true;
-      }
-      return stats?.isFile() && !extensions.some((ext) => path.endsWith(ext));
-    }
-  });
-  watcher.on('add', (path) => generateMetadata(path, excludePatternInGlob));
-  watcher.on('change', (path) => generateMetadata(path, excludePatternInGlob));
-};
-
-const customPlugin = (): PluginOption => {
-  return {
-    name: 'configure-server',
-    configureServer(server) {
-      server.middlewares.use('/.atomic-state-canvas', async (req, res) => {
-        const fs = await import('fs/promises');
-        const path = await import('path');
-        try {
-          const files = await fs.readdir(DEFAULT_METADATA_DIR_NAME);
-          const data = await Promise.all(
-            files.map(async (f) =>
-              JSON.parse(await fs.readFile(path.join(DEFAULT_METADATA_DIR_NAME, f), 'utf-8'))
-            )
-          );
-          res.setHeader('Content-Type', 'application/json');
-          res.end(JSON.stringify(data));
-        } catch (err) {
-          console.error(err);
-          res.end(JSON.stringify([]));
-        }
+// Default command - launch viewer (serve)
+program
+  .command('serve', { isDefault: true })
+  .description('Start the Atomic State Canvas viewer server')
+  .option('-p, --port <port>', 'Port to run the viewer on')
+  .option('-w, --watch-dir <dir>', 'Directory to watch for .asc files')
+  .option('--dev', 'Run in development mode')
+  .action(async (options: { port?: string; watchDir?: string; dev?: boolean }) => {
+    try {
+      const result = await launchViewer({
+        port: options.port ? parseInt(options.port, 10) : undefined,
+        watchDir: options.watchDir,
+        isDev: options.dev
       });
+      logMsg(
+        `Atomic State Canvas Viewer running at ${result.url} (${options.dev ? 'dev' : 'prod'} mode)`
+      );
+    } catch (error) {
+      console.error('Failed to start viewer:', error);
+      process.exit(1);
     }
-  };
-};
-
-async function main() {
-  const config: IAscConfig = await loadConfig(explorer);
-  const {
-    port = DEFAULT_PORT,
-    watchDir = path.resolve(process.cwd(), DEFAULT_WATCH_DIR),
-    extensions = DEFAULT_EXTENSIONS,
-    excludePatternInGlob
-  } = config;
-  const viewerPath = isDev
-    ? path.resolve(process.cwd(), 'apps/asc-viewer')
-    : path.resolve(__dirname, 'asc-viewer');
-
-  const server = await createServer({
-    root: viewerPath,
-    server: {
-      port
-    },
-    plugins: [customPlugin()]
   });
-  // TODO: Add server.restart() to watcher
-  watchAndGenerateMetadata({ watchDir, extensions, excludePatternInGlob });
 
-  await server.listen();
-  logMsg(
-    `🚀 Atomic State Canvas Viewer running at http://localhost:${port} (${isDev ? 'dev' : 'prod'} mode)`
-  );
-}
+// MCP subcommand
+program
+  .command('mcp')
+  .description('Start the MCP server for AI assistant integration')
+  .action(async () => {
+    try {
+      await startMcpServer();
+    } catch (error) {
+      console.error('Failed to start MCP server:', error);
+      process.exit(1);
+    }
+  });
 
-void main();
+program.parse();
