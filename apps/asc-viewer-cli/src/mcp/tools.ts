@@ -4,7 +4,6 @@ import {
   generateAtomicStateGraph,
   getFileDetailsGivenFramework
 } from '@atomic-state-canvas/core';
-import { launchViewer } from './viewer';
 
 // Tool schemas
 const analyzeStateSchema = z.object({
@@ -30,7 +29,7 @@ const listAtomsSchema = z.object({
 const launchViewerSchema = z.object({
   port: z.number().optional().default(1296).describe('Port to run the viewer on'),
   watchDir: z.string().optional().describe('Directory to watch for .asc files')
-});
+}).describe('Returns instructions for launching the viewer');
 
 // Tool definitions for MCP
 export const tools = [
@@ -55,7 +54,7 @@ export const tools = [
   {
     name: 'launch_viewer',
     description:
-      'Start the Atomic State Canvas web viewer for visual exploration of state dependencies. Opens an interactive 2D/3D visualization.',
+      'Get instructions for launching the Atomic State Canvas web viewer. Returns the command to run for visual exploration of state dependencies in an interactive 2D/3D visualization. The user should run this command in their terminal.',
     inputSchema: toJSONSchema(launchViewerSchema)
   }
 ];
@@ -76,7 +75,7 @@ export async function handleToolCall(toolName: string, args: unknown): Promise<T
       case 'list_atoms':
         return listAtoms(listAtomsSchema.parse(args));
       case 'launch_viewer':
-        return await launchViewerHandler(launchViewerSchema.parse(args));
+        return launchViewerHandler(launchViewerSchema.parse(args));
       default:
         return {
           isError: true,
@@ -209,28 +208,29 @@ function listAtoms(args: z.infer<typeof listAtomsSchema>): ToolResult {
 }
 
 // launch_viewer implementation
-async function launchViewerHandler(args: z.infer<typeof launchViewerSchema>): Promise<ToolResult> {
+function launchViewerHandler(args: z.infer<typeof launchViewerSchema>): ToolResult {
   const { port, watchDir } = args;
 
-  try {
-    const result = await launchViewer({ port, watchDir });
-    return {
-      content: [
-        {
-          type: 'text',
-          text: `Atomic State Canvas Viewer started at ${result.url}`
-        }
-      ]
-    };
-  } catch (error) {
-    return {
-      isError: true,
-      content: [
-        {
-          type: 'text',
-          text: `Failed to launch viewer: ${error instanceof Error ? error.message : String(error)}`
-        }
-      ]
-    };
-  }
+  const portArg = port !== 1296 ? ` --port ${port}` : '';
+  const watchDirArg = watchDir ? ` --watch-dir ${watchDir}` : '';
+  const command = `npx asc-viewer serve${portArg}${watchDirArg}`;
+
+  const instructions = [
+    'To launch the Atomic State Canvas Viewer, run the following command in your terminal:',
+    '',
+    `  ${command}`,
+    '',
+    `This will start the viewer at http://localhost:${port}`,
+    '',
+    'The viewer watches for .asc. files and provides interactive 2D/3D visualization of your state dependencies.'
+  ].join('\n');
+
+  return {
+    content: [
+      {
+        type: 'text',
+        text: instructions
+      }
+    ]
+  };
 }

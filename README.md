@@ -76,7 +76,7 @@ Add to your Claude Code config (`.mcp.json`):
 | `analyze_state` | Generate dependency graph from entry file/variable |
 | `find_cycles` | Detect cyclic dependencies and self-references |
 | `list_atoms` | List all atoms/selectors in a file with dependencies |
-| `launch_viewer` | Start the visualization server |
+| `launch_viewer` | Get command instructions to start the visualization server |
 
 ## Roadmap
 - [ ] Support more state management libraries such as [Jotai](https://jotai.org/)
