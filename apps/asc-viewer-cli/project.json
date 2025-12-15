@@ -43,6 +43,13 @@
         "command": "tsx apps/asc-viewer-cli/src/index.ts --dev",
         "cwd": "."
       }
+    },
+    "mcp": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "tsx apps/asc-viewer-cli/src/index.ts mcp",
+        "cwd": "."
+      }
     }
   }
 }
