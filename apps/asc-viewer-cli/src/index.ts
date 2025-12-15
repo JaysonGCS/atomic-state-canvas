@@ -6,7 +6,7 @@ import { startMcpServer } from './mcp/index';
 
 const program = new Command();
 
-program.name('asc-viewer').description('Atomic State Canvas Viewer CLI').version('0.0.1');
+program.name('asc-viewer').description('Atomic State Canvas Viewer CLI');
 
 // Default command - launch viewer (serve)
 program
